@@ -45,7 +45,41 @@ target/WBDTeamDeathmatch-1.0.0-a4cbeed-20260926-1745.jar
                 └ 版本号    └ git短哈希  └ 构建时间戳（UTC）
 ```
 
-哈希与时间戳由 `git-commit-id-maven-plugin` + `maven-antrun-plugin` 自动追加。源码不在 git 仓库里时，哈希位置会退化成 `nogit`，产物名依然是干净的。
+哈希与时间戳由 `git-commit-id-maven-plugin` + `maven-antrun-plugin` 自动追加。
+
+### ⚠️ 仓库必须至少有一个提交
+
+`git-commit-id` **在仓库没有任何 commit 时会直接让构建失败**：
+
+```
+Could not get HEAD Ref, are you sure you have some commits in the dotGitDirectory
+```
+
+刚 `git init` 完还没提交、或者克隆了一个空仓库时会撞上这个。`failOnNoCommit` 这个参数在当前使用的 9.0.1 版本里**不生效**（实测过），所以只能靠"让仓库有提交"来解决：
+
+```bash
+git add -A && git commit -m "初始提交"
+```
+
+正常从 GitHub 克隆下来的仓库不会是空的，因此日常开发遇不到；只有从零开始搭仓库时会碰到一次。
+
+源码不在 git 仓库里时（例如直接把源码拷出去），哈希位置会退化成 `nogit`，产物名依然是干净的。
+
+---
+
+## 换行符
+
+`.gitattributes` 里设了 `* text=auto eol=lf`，所有文本文件一律以 LF 存入仓库。
+
+缺了这一条时换行交给 `core.autocrlf` 自行决定，于是同一个文件在不同机器上会签出成不同换行——表现为"没改过却显示已修改"，或者每次 `git add` 都刷一屏 `LF will be replaced by CRLF` 警告。
+
+`*.bat` / `*.cmd` 显式保持 CRLF（cmd 解析需要）。
+
+如果在你机器上已经出现了整文件的换行改动，执行一次：
+
+```bash
+git add --renormalize .
+```
 
 ---
 
