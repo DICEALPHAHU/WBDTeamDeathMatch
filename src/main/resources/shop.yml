@@ -1,0 +1,108 @@
+# ============================================================
+#  WBDTeamDeathmatch 商店配置（空模板）
+# ============================================================
+# 本文件与 WarZBombDefuse 内置的 shop.yml 一样，**商品列表为空** ——
+# 刻意不预设任何武器：卖什么枪、定什么价，都该由服主决定。
+#
+# 什么时候会读到本文件：
+#   只有 config.yml 里 shop.source 设为 local 时才读它。
+#   默认是 source: wbd，也就是直接读 plugins/WarZBombDefuse/shop.yml。
+#
+# 想给死斗单独一套商品，两条路：
+#   1. 把 WBD 那份复制过来（或在这里手写），然后把 source 改成 local；
+#   2. 两边共用，就保持 source: wbd，只在 config.yml 里用
+#      shop.slot-overrides / shop.material-slots 调整落点 —— 连复制都不用。
+#
+# 格式与 WBD 的 shop.yml 完全一致。死斗特有的两点：
+#   1. 商品价格来自 price 字段（配合 config.yml 的 economy 段），不是全免费。
+#   2. 「买新的自动换掉旧的」按**解析出来的落点槽位**分组：
+#      落在同一格的商品互相替换（几十把枪共用一个主武器格），
+#      落在不同格的并存（手雷不会把枪顶掉）。
+#      谁占哪一格会全部打进启动日志；想固定就写 give-slot，
+#      或在 TDM 的 config.yml 里写 shop.slot-overrides。
+# ============================================================
+
+shop:
+  # 发给玩家的商店打开物品
+  open-item:
+    material: EMERALD
+    name: "&a装备菜单"
+    slot: 8
+
+  # 菜单大小，必须是 9 的倍数，范围 9-54
+  size: 54
+
+  # 总页数。商品用 page 字段指定自己在第几页
+  pages: 1
+
+  # 菜单标题。支持变量 %page% %pages% %team% %team_name%
+  title: "&8[&6死斗&8] &f装备商店 &7%page%/%pages%"
+
+  # 翻页按钮槽位。不写 previous-item/next-item/info-item 时用默认外观
+  navigation:
+    previous-slot: 45
+    info-slot: 49
+    next-slot: 53
+    previous-item:
+      material: ARROW
+      name: "&e上一页"
+    next-item:
+      material: ARROW
+      name: "&e下一页"
+    info-item:
+      material: PAPER
+      name: "&6第 %page% / %pages% 页"
+
+  # 商品列表 —— 默认空，按下面的说明自己加。
+  #
+  # 单件商品支持的全部字段（与 WBD 一致）：
+  #   page              所在页码
+  #   slot              在该页菜单里的槽位
+  #   team              T / CT / ANY
+  #   price             价格，购买成功后从商店金钱里扣
+  #   permission        购买所需权限，留空则不限制
+  #   display           菜单图标（material / name / lore）
+  #   display-data      完整图标数据（编辑器生成，优先于 display）
+  #   give              实际发放的物品
+  #   give-data         完整物品数据（优先于 give）
+  #   give-slot         发放到背包第几格；不写则自动分配落点
+  #   click-commands    购买后执行的命令，支持 %player% %uuid% %item%
+  #   command-sender    console / player，默认 console
+  #   command-repeat    命令重复次数（1-64）
+  #   close-after-click 点击后是否关闭菜单，默认 false
+  #
+  # ⚠ 模组枪械、投掷物（TacZ 等）**必须**有 give-data，否则服务端只能按材质
+  #   造一个空壳，发到手里就不是那把枪。在 WBD 的商店编辑器里保存一次会自动
+  #   生成它；启动日志也会点名哪些商品缺 give-data。
+  #
+  # 示例（去掉注释、照抄到下面 items: 的位置，注意缩进要一致）：
+  #
+  # items:
+  #   rifle:
+  #     page: 1
+  #     slot: 10
+  #     team: ANY
+  #     price: 2700
+  #     display:
+  #       material: IRON_INGOT
+  #       name: "&e步枪"
+  #       lore:
+  #         - "&7点击选择"
+  #         - "&6$2700"
+  #     give:
+  #       material: IRON_INGOT
+  #     give-slot: 0
+  #
+  # 阵营专属商品写在 team-shops 下，同 ID 会覆盖公共商品：
+  #
+  # team-shops:
+  #   T:
+  #     title: "&8[&6死斗&8] &cT 方装备商店 &7%page%/%pages%"
+  #     pages: 1
+  #     items: {}
+  #   CT:
+  #     title: "&8[&6死斗&8] &bCT 方装备商店 &7%page%/%pages%"
+  #     pages: 1
+  #     items: {}
+
+  items: {}

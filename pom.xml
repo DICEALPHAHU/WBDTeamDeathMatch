@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>alphahu</groupId>
+    <artifactId>WBDTeamDeathmatch</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>WBDTeamDeathmatch</name>
+    <description>WarZBombDefuse 生态下的团队死斗模式：无限复活、限时击杀赛，并通过 WbdAddonApi 复用 WBDAddon 的附加功能。</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- 构建号 = git 提交短哈希 + 构建时间戳（UTC），产物名形如
+             WBDTeamDeathmatch-1.0.0-a4cbeed-20260926-1745.jar：
+             哈希能一眼对应到是哪份代码，时间戳用于区分同一提交的多次构建 -->
+        <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <!-- Paper API，编译期提供，包含 Folia 调度器接口 -->
+        <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>1.20.1-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- WBDAddon 本地依赖，需将构建好的 WBDAddon.jar 放入 libs/ 目录。
+             本插件只用到它的 alphahu.wbdaddon.api 包（AddonMode / WbdAddonApi）——
+             靠这两个接口把死斗玩家喂给 WBDAddon 的饥饿锁定、防第三人称、
+             JourneyMap 桥接等功能，而不必把 WBDAddon 的类加载器钉死在这里。
+             运行期没装 WBDAddon 时插件仍可独立运行，只是少了那些附加功能。 -->
+        <dependency>
+            <groupId>alphahu</groupId>
+            <artifactId>WBDAddon</artifactId>
+            <version>1.2.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/WBDAddon.jar</systemPath>
+        </dependency>
+
+        <!-- SQLite JDBC，编译期可见、运行期用服务端自带的那份。
+             Paper / Spigot / Arclight 都在 libraries/ 里提供它
+             （本机服务端是 org.xerial:sqlite-jdbc:3.42.0.0），
+             插件再打包一份只会多出几百 KB 和一次潜在的版本冲突。
+             RankedStore 会在启动时 Class.forName 探测一次，缺驱动就
+             把段位功能降级禁用，不会影响死斗本体。 -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.42.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <defaultGoal>clean package</defaultGoal>
+
+        <finalName>${project.artifactId}-${project.version}</finalName>
+
+        <plugins>
+            <!-- 取 git 提交短哈希，供产物命名使用 -->
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>9.0.1</version>
+                <executions>
+                    <execution>
+                        <id>get-git-info</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <abbrevLength>7</abbrevLength>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <!-- 用 release 而非 source/target：保证只链接 Java 17 的 API -->
+                    <release>${java.version}</release>
+                </configuration>
+            </plugin>
+
+            <!-- 打包完成后把产物改名为「版本号-git 短哈希-构建时间戳」。
+                 本插件没有需要 shade 的第三方库（WBDAddon 与 Paper 都是编译期依赖），
+                 因此直接对普通 jar 改名即可。 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>stamp-artifact-name</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <!-- 从插件生成的 git.properties 里读哈希。
+                                     不能直接写 ${git.commit.id.abbrev}：该插件只负责写文件，
+                                     并不会把属性注入 Maven，那样只会得到字面量。
+                                     下面的 condition 是保险：万一属性没读到
+                                     （例如源码被拷出仓库、插件没生成这个文件），
+                                     构建号会退化成 nogit，产物名依然是干净的，
+                                     而不是把 ${...} 原样留在文件名里。 -->
+                                <loadproperties srcFile="${project.build.outputDirectory}/git.properties"/>
+                                <condition property="artifact.stamp"
+                                           value="${git.commit.id.abbrev}"
+                                           else="nogit">
+                                    <isset property="git.commit.id.abbrev"/>
+                                </condition>
+                                <move file="${project.build.directory}/${project.build.finalName}.jar"
+                                      tofile="${project.build.directory}/${project.build.finalName}-${artifact.stamp}-${maven.build.timestamp}.jar"
+                                      overwrite="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+</project>

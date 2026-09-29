@@ -1,0 +1,231 @@
+# 配置
+
+## 四个文件的分工
+
+| 文件 | 位置 | 管什么 |
+|---|---|---|
+| `config.yml` | 插件数据目录 | 跨场地通用的玩法默认值、HUD、经济、出生装备、战报、集成开关 |
+| `arenas.yml` | 插件数据目录 | 每个场地的坐标、出生点、边界、购买区，以及可覆盖的玩法参数 |
+| `season.yml` | 插件数据目录 | 段位表、计分公式、段位保护、赛季（详见 [ranked.md](ranked.md)） |
+| `messages.yml` | 插件数据目录 | 全部对玩家显示的文案 |
+
+四个文件**都只在缺失时生成**，升级插件不会覆盖你改过的内容。需要新增配置项时，请对照 `src/main/resources/` 下的同名文件手工补齐——jar 内的版本永远是权威的最新结构。
+
+**改完用 `/tdm reload` 重载**（`config.yml` 与 `season.yml` 的数值类改动立即生效；`arenas.yml` 的改动会重建所有比赛，先把人送走）。
+
+---
+
+## config.yml
+
+### `match` —— 比赛规则
+
+| 键 | 默认 | 说明 |
+|---|---|---|
+| `target-kills` | — | 先达到该击杀数的队伍获胜；`0` 表示不设目标 |
+| `time-limit-seconds` | — | 时间上限；`0` 表示不限时 |
+| `countdown-seconds` | — | 开局倒计时 |
+| `end-delay-seconds` | — | 结算展示停留多久后重开 |
+| `auto-restart` | — | 是否自动开下一场 |
+| `min-players` | — | 最少开局人数 |
+| `auto-balance` | — | 是否自动平衡两队人数 |
+
+以上都可在 `arenas.yml` 里按场地覆盖。
+
+### `respawn` —— 复活
+
+| 键 | 说明 |
+|---|---|
+| `delay-seconds` | 阵亡后等待几秒复活。**设 0 也能正确工作**（有一处竞态专门处理过） |
+| `protection-seconds` | 复活后的无敌时间 |
+| `break-protection-on-attack` | 自己在保护期内攻击别人时，是否立即失去保护 |
+| `drop-items` | 阵亡是否掉落物品 |
+| `spawn-mode` | `random` 或 `first`，从该阵营的出生点列表里怎么选 |
+
+### `combat` —— 战斗
+
+| 键 | 说明 |
+|---|---|
+| `friendly-fire` | 是否允许友伤 |
+| `override-death-message` | 是否覆盖原版死亡消息 |
+| `kill-message` | 击杀提示模板 |
+| `killstreak-broadcast` | 达到几连杀时全服播报；`0` 关闭 |
+| `prevent-item-drop` | 是否禁止比赛中丢弃物品 |
+
+> `prevent-item-drop` 是一刀切的，不只拦商店发出的物品。死斗里装备随时能从商店换，丢东西本就没有实际意义；只拦商店物品的话，"买一个丢地上、再买一个、捡回来"这条刷装备的路子还得靠逐个识别才能堵。
+
+### `hud` —— 显示
+
+| 键 | 说明 |
+|---|---|
+| `kill-message-format` / `kill-message-duration-ms` | ActionBar 击杀播报的模板与时长（末尾会淡出） |
+| `respawn-bar-*` | 复活倒计时 BossBar 的标题与颜色 |
+| `protection-bar-*` | 无敌倒计时 BossBar |
+| `match-bar-*` | 比分与时间 BossBar |
+| `scoreboard-enabled` / `scoreboard-title` / `scoreboard-lines` | 侧边栏 |
+
+侧边栏每人一块**独立**计分板，因此可以放个人数据。占位符：
+
+```
+%target%  %money%  %tier%  %kills%  %deaths%  %kd%
+%respawn%  %alive%  %size%  %arena%
+```
+
+`%t_score%` `%ct_score%` `%time%` 这三项 BossBar 上已经有了，别在侧边栏重复。
+
+> **代价与补偿**：原版队伍数据是跟着玩家"当前所用的那块计分板"下发的。玩家一切到自己的板子，就收不到主计分板上的队伍了，JourneyMap 的队友可见 / 敌军隐藏会静默失效。插件会把那些队伍**镜像**过来（每 2 秒一次，且只在成员真的变了时才发包），所以两者可以并存。
+
+### `economy` —— 经济
+
+| 键 | 默认 | 说明 |
+|---|---|---|
+| `enabled` | `true` | 关掉就回到全免费，`price` 字段重新被忽略 |
+| `start-money` | `800` | 每场开局的启动资金，会被 `max-money` 夹住 |
+| `kill-reward` | `300` | 每次击杀的基础赏金 |
+| `killstreak-bonus` | `100` | 第 N 连杀额外多给 `(N-1) × 本值` |
+| `killstreak-bonus-max` | `500` | 连杀加成的封顶 |
+| `max-money` | `16000` | **持有上限**。击杀赏金、连杀加成、启动资金全都受它约束 |
+
+到顶之后击杀播报显示的是真实入账（可能是 `+0`），而不是照喊 `+300`——那样玩家会以为钱被吞了。
+
+### `loadout` —— 出生装备
+
+`clear-inventory` 只在**进入比赛**时生效，阵亡复活不清背包。
+
+`common` / `t` / `ct` 里每条可以是三类东西：
+
+```yaml
+loadout:
+  common:
+    # 1. 序列化物品（推荐）——模组枪械、投掷物唯一能原样发放的方式
+    - "3@bukkit-object:rO0AB..."
+    # 2. 原版物品
+    - "STONE_SWORD"
+    - "ARROW:16"
+    # 3. 控制台命令
+    - "cmd:tacz give %player% p320"
+```
+
+前两类可加 `槽位@` 前缀指定落点（从 0 数起）；不写则自动找第一个空位。
+
+`default-items` 是另一条路：直接写**商店商品的 id**，开局自动发放且不扣钱。它复用购买那套落点与覆盖逻辑，所以默认给的枪落在哪一格，和玩家自己买它时完全一致。两侧可以并存。
+
+> 用 `cmd:` 发枪不建议：模组自己的 give 命令生成出来的物品未必和你要的那一件一致，而且每次复活都会重跑一遍。想要"发出去的就是这一件"，就用 `bukkit-object:`。
+
+### `reports` —— 战报
+
+| 键 | 默认 | 说明 |
+|---|---|---|
+| `enabled` | `true` | 是否生成战报文件 |
+| `folder` | `reports` | 保存目录，相对插件数据目录 |
+| `keep` | `500` | 最多保留多少份，超出后删最旧的；`0` 表示不限制 |
+| `include-ranked` | `true` | 是否包含段位变化 |
+| `include-players` | `true` | 关掉就只留一行比分摘要 |
+
+> `keep` 建议保留上限：一局一份文件，一个活跃服务器每天能产生几十份。
+
+### `shop` —— 商店
+
+详见 [shop.md](shop.md)。这里列出与位置相关的两项：
+
+| 键 | 默认 | 说明 |
+|---|---|---|
+| `source` | `wbd` | `wbd` = 直接读 WarZBombDefuse 的商店；`local` = 读本插件数据目录里的副本 |
+| `buy-zone-required` | `false` | 场地**没配**购买区时是否也禁止购买 |
+| `tag-granted-items` | `true` | 是否给商店发出的物品打分组标记（用于"买新的自动换掉旧的"） |
+| `fallback-slot` / `slot-overrides` / `material-slots` | — | 落点规则 |
+
+### `integration` —— 与 WBDAddon 的集成
+
+| 键 | 默认 | 说明 |
+|---|---|---|
+| `wbdaddon` | `true` | 总开关 |
+| `use-wbdaddon-hud` | `true` | 顶部状态行是否交给 WBDAddon 渲染 |
+| `warn-arena-conflict` | `true` | 启动时检查 WBD 侧是否启用了同一个场地 |
+| `auto-disable-in-wbd` | `true` | `/tdm enable` 时自动在 WBD 侧禁用同名场地 |
+| `antithirdcam-in-tdm` | `false` | 死斗玩家是否也挂防第三人称遮挡面 |
+| `wbd-arenas-file` | `plugins/WarZBombDefuse/arenas.yml` | WBD 的场地文件路径 |
+
+> `antithirdcam-in-tdm` 默认关闭：那块遮挡面必须待在你自己的视野里才能让第三人称失去偷看价值，于是低头时会看到黑块、贴身缠斗时会挡住你正要打的人。这个代价在节奏慢、要防隔墙偷看的爆破模式里划算；死斗以近距离交火为主，弊大于利。
+
+### `teammate` —— 队友名牌
+
+```yaml
+teammate:
+  name-tag: true                          # 前缀 + 隐藏敌人名牌，共用一个开关
+  name-tag-prefix: "&a[队友] &f"
+```
+
+**这两件事共用一个开关是有意的**：原版队伍的前缀是"所有人的客户端都收得到"的，只加前缀而不把名牌设成"仅自己方可见"，敌人头上也会顶着一个 `[队友]`——比不做还糟。拆成两个开关就会出现这个中间状态。
+
+需要 WBDAddon **1.2.0+**。低于此版本该功能静默失效，插件会在控制台打印警告。
+
+---
+
+## arenas.yml
+
+每个场地一个段落，坐标格式与 WarZBombDefuse **完全一致**：
+
+```yaml
+arenas:
+  tdm_demo:
+    enabled: false
+    name: "死斗示例场地"                # 不写则回退成 id；导入的场地会自动从 WBD 读
+    min-players: 2                      # 以下均为可选覆盖项
+    max-players: 20
+    lobby: "world,0.5,80.0,0.5,0,0"
+    boundary:
+      world: "world"
+      min: "-80,0,-80"
+      max: "80,255,80"
+    t-spawns:
+      - "world,-10.5,80.0,0.5,90,0"
+    ct-spawns:
+      - "world,10.5,80.0,0.5,-90,0"
+    buy-zones:
+      t:
+        - "world,-10.5,80.0,0.5,90,0,8.0"    # 最后一位是球体半径
+      ct:
+        - "world,10.5,80.0,0.5,-90,0,8.0"
+    unrank: false                        # true = 该场地不结算段位
+    imported-from: dust2                 # 由 /tdm import 自动写入，指向 WBD 侧 id
+    fireworks: []
+```
+
+### 坐标与边界格式
+
+| 用途 | 格式 |
+|---|---|
+| 点（出生点、大厅） | `world,x,y,z,yaw,pitch` |
+| 购买区 | `world,x,y,z,yaw,pitch,radius` |
+| 边界 | `world` + `min: "x,y,z"` + `max: "x,y,z"` |
+
+购买区是**球体**，`yaw`/`pitch` 对球形区域没有意义，保留只是为了让你能从 WBD 那份配置里直接抄一行过来。
+
+### buy-zones
+
+玩家必须站在**自己阵营**的购买区内才能打开商店。不配置的阵营不受位置限制（与 WBD 的"留空表示任意队任意位置都可购买"一致）；想让"没配也不许买"生效，把 `shop.buy-zone-required` 打开。
+
+> ⚠️ 建议把购买区放在各自出生点附近，半径 6~10。太小会卡住复活后想换装备的人；太大就等于回到"哪里都能买"。坐标写错（球心落在地底或半空）的表现是**商店突然完全打不开**。
+
+### unrank
+
+`unrank: true` 的场地不结算段位，训练场、娱乐场、活动场用它。判定发生在比赛结束时，所以比赛打到一半改它，影响的也是这一局的结算。
+
+### imported-from
+
+由 `/tdm import` 自动写入，记录"这个场地是从 WBD 的哪个 id 导入的"。导入时允许改 id（`/tdm import dust2 tdm_dust2`），所以不能靠死斗这边的 id 去猜。
+
+它有两个用途：一是 `/tdm enable` 时去 WBD 侧禁用**真正该禁的那个**场地；二是运行时从 WBD 读场地显示名。
+
+---
+
+## messages.yml
+
+全部对玩家显示的文案。支持 `&` 颜色代码，改完 `/tdm reload` 重载。
+
+两条刻意的设计：
+
+- **不认识的变量原样保留**。写错变量名是配文案时最常见的错误，而"静默变成空字符串"会让你对着一条缺了名字的公告反复检查逻辑。留下 `%foo%` 一眼就知道是变量名写错了。
+- **只用 jar 内的默认值补全，不写回文件**。升级后新增的消息立刻生效，但不会重写你那份文件——重写会把你写的注释和排版全冲掉。
+
+分段：`broadcast`（全服公告）、`ranked`（段位结算）、`commands`（命令输出）、`shop`、`report-menu`、`report`。

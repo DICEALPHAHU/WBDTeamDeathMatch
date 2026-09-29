@@ -1,0 +1,109 @@
+# ============================================================
+#  WBDTeamDeathmatch 消息文案
+# ============================================================
+# 支持 & 颜色代码，改完用 /tdm reload 重载。
+#
+# 变量写作 %xxx%。写了不存在的变量会原样留在消息里（例如 %foo%），
+# 不会报错也不会变成空 —— 这样你调文案时能一眼看出哪个变量名写错了。
+# ============================================================
+
+# 消息前缀，拼在大部分消息前面。
+prefix: "&8[&6死斗&8]&r "
+
+# ---------------- 全服公告 ----------------
+# 加入/离开场地时发给**全服**（不只是场内玩家），与 WarZBombDefuse 的
+# join-global 行为一致。
+broadcast:
+  # 变量：
+  #   %player%    玩家名
+  #   %arena%     场地显示名
+  #   %arena_id%  场地 id
+  #   %tier%      段位（含小段，如「黄金 II」；没有排位记录时显示下面的 unranked-tier）
+  #   %ranked%    该场地是否结算段位：「排位」或「非排位」
+  #   %team%      阵营（T / CT）
+  #   %players%   当前人数
+  #   %max%       人数上限
+  join-global: "&8[&6死斗&8]&r &b[%tier%] &f%player% &7加入了地图 &e%arena% &8(&7%ranked%&8) &7(&f%team%&7) &7当前 &a%players%&7/&a%max%"
+
+  # 变量：%player% %arena% %arena_id% %team% %players% %max%
+  leave-global: "&8[&6死斗&8]&r &f%player% &7离开了地图 &e%arena% &7当前 &a%players%&7/&a%max%"
+
+  # 该场地不结算段位时，%ranked% 显示成这个。
+  ranked-yes: "排位"
+  ranked-no: "非排位"
+
+  # 玩家没有排位记录时，%tier% 显示成这个。
+  unranked-tier: "未定级"
+
+# ---------------- 段位结算 ----------------
+# 比赛结束后发给每位参与者。变量：
+#   %tier_before% %tier_after%   结算前后的段位
+#   %rp_before%   %rp_after%     结算前后的 RP
+#   %delta%                      RP 变化（带正负号）
+#   %placement%                  名次分
+#   %margin%                     比分差修正
+#   %kills_rp%                   击杀分
+#   %team_place%                 队内排名分
+#   %entry_fee%                  入场费（正数，显示时自己加负号）
+#   %kills% %deaths% %team% %arena% %player%
+ranked:
+  header: "&6======== &e段位结算 &6========"
+  line-detail: "&7名次 &f%placement% &8| &7比分差 &f%margin% &8| &7击杀 &f%kills_rp% &8| &7队内 &f%team_place% &8| &7入场 &f-%entry_fee%"
+  line-total: "&7本局 RP：&f%rp_before% &7→ &f%rp_after% &8(&f%delta%&8)"
+  line-tier: "&7段位：%tier_before% &7→ %tier_after%"
+  promoted: "&a&l升段！&r &7你已进入 %tier_after%&7。"
+  demoted: "&c降段。&7你已降至 %tier_after%&7。"
+  footer: "&6=========================="
+
+  # 中途加入者（只结算击杀分）的补充说明。留空则不显示。
+  late-join-note: "&7你是中途加入，本局只结算击杀分。"
+
+  # 场地不结算段位时的提示。
+  unranked-note: "&7该场地不结算段位。"
+
+  # 中途离开的处罚。变量：%penalty% 扣除的点数，%rp_before% %rp_after%
+  leave-penalty: "&c你中途离开了比赛：本局不结算排位分，并双倍扣除入场费 &f-%penalty% &7RP。&8(&f%rp_before% &7→ &f%rp_after%&8)"
+  # 所在段位入场费为 0（菜鸟/青铜）时的版本。
+  leave-penalty-free: "&e你中途离开了比赛：本局不结算排位分。&7（你所在段位不收入场费，没有额外扣分）"
+
+# ---------------- 命令输出 ----------------
+commands:
+  # /tdm rank
+  rank-self: "&7你的段位：%tier% &8(&f%rp% &7RP&8) &7本赛季 &f%played% &7场 &8(&a%wins%胜 %c%losses%负&8)"
+  rank-other: "&f%player% &7的段位：%tier% &8(&f%rp% &7RP&8) &7本赛季 &f%played% &7场 &8(&a%wins%胜 %c%losses%负&8)"
+  rank-none: "&7没有查到 &f%player% &7的排位记录。"
+  rank-disabled: "&c段位系统当前不可用。检查 season.yml 的配置，以及服务端是否提供 SQLite 驱动。"
+
+  # /tdm season
+  season-info: "&7当前赛季 &f#%season%&7，&f%days% &7天后结束。"
+  season-disabled: "&7赛季功能已在 season.yml 中关闭，RP 会一直累积。"
+  season-reset: "&a已执行赛季软重置：&7所有玩家的 RP 按 &f基准 + (旧值 - 基准) / 2 &7调整。"
+  season-reset-broadcast: "&6&l新赛季开始！&r &7上赛季成绩已结算，RP 已按软重置规则调整。"
+
+# ---------------- 商店 ----------------
+shop:
+  # 玩家不在自己阵营的购买区里却想打开商店。
+  outside-buy-zone: "&c你不在购买区内 —— 回到出生点附近才能打开商店。"
+
+# ---------------- 战报查询 ----------------
+# /tdm matchrp <玩家> 打开的箱子界面。
+report-menu:
+  # 界面标题。%player% 是被查询的玩家名。
+  title: "&8%player% 比赛战报"
+
+  # 每格图标的材质（原版 Material 名）。默认纸张。
+  icon-material: PAPER
+
+  # 图标底部的点击提示。
+  click-hint: "&a点击查看完整战报"
+
+  # 该玩家还没有任何比赛记录。
+  empty: "&7%player% 还没有比赛记录。"
+
+  # 战报库打不开（段位系统未启用或数据库不可用）。
+  unavailable: "&c战报库当前不可用。检查 season.yml 与 ranked.db 是否正常。"
+
+# 点击图标后在聊天栏展开的战报。上下两条分隔线。
+report:
+  header: "&6======== &e比赛战报 &6========"
+  footer: "&6=========================="

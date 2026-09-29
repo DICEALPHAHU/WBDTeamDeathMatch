@@ -1,0 +1,150 @@
+# ============================================================
+#  WBDTeamDeathmatch 段位（排位）配置
+# ============================================================
+# 这个文件管四件事：
+#   1. season     —— 赛季开关、时长、软重置
+#   2. tiers      —— 段位表：分数区间与入场费
+#   3. scoring    —— 一局打完后 RP 怎么加减
+#   4. protection —— 段位保护
+#
+# 段位数据存在 plugins/WBDTeamDeathmatch/ranked.db（SQLite）。
+# 只有 arenas.yml 里没有标 unrank: true 的场地才结算段位。
+#
+# 改完用 /tdm reload 重载。数值类字段改完立即生效，段位表改动会重建
+# 分数→段位的映射（已存在的 RP 不会变，只是显示出的段位可能变）。
+# ============================================================
+
+# ---------------- 赛季 ----------------
+season:
+  # 是否启用赛季。关掉后不再自动重置，RP 一直累积。
+  enabled: true
+
+  # 赛季时长（天）。到期后自动软重置并进入下一赛季。
+  # 只在 enabled: true 时生效。
+  length-days: 60
+
+  # 软重置的基准分：新赛季 RP = 基准 + (旧 RP - 基准) / 2
+  #
+  # 刻意不是清零。清零会让所有人回到同一起跑线，上赛季的努力完全作废，
+  # 而且下赛季前期高手和新人会被混在一起，两边体验都差。
+  # 软重置只掉一半，段位通常降一档，但进度感还在。
+  soft-reset-base: 2000
+
+  # 当前赛季编号。软重置时自动 +1；也可以 /tdm season reset 手动推进。
+  current: 1
+
+# ---------------- 段位表 ----------------
+# 从上到下必须按 min-rp 升序，区间连续且不重叠（启动时会校验，写错了会报出来）。
+#
+#   sub-tiers  小段数量。4 表示 IV / III / II / I（IV 最低、I 最高）；
+#              0 表示这段位没有小段（用于「猎杀」这种顶部分段）。
+#   entry-fee  入场费。每局开始先扣这么多，段位越高越贵 ——
+#              这是排位系统的核心压力：高段位必须维持胜率才不掉下去，
+#              否则谁都能靠堆场次磨上去。
+tiers:
+  - id: rookie
+    name: "菜鸟"
+    color: "&7"
+    min-rp: 0
+    max-rp: 999
+    sub-tiers: 4
+    entry-fee: 0
+
+  - id: bronze
+    name: "青铜"
+    color: "&6"
+    min-rp: 1000
+    max-rp: 1999
+    sub-tiers: 4
+    entry-fee: 0
+
+  - id: silver
+    name: "白银"
+    color: "&f"
+    min-rp: 2000
+    max-rp: 2999
+    sub-tiers: 4
+    entry-fee: 12
+
+  - id: gold
+    name: "黄金"
+    color: "&e"
+    min-rp: 3000
+    max-rp: 3999
+    sub-tiers: 4
+    entry-fee: 24
+
+  - id: platinum
+    name: "铂金"
+    color: "&b"
+    min-rp: 4000
+    max-rp: 4999
+    sub-tiers: 4
+    entry-fee: 36
+
+  - id: diamond
+    name: "钻石"
+    color: "&3"
+    min-rp: 5000
+    max-rp: 5999
+    sub-tiers: 4
+    entry-fee: 48
+
+  - id: master
+    name: "大师"
+    color: "&5"
+    min-rp: 6000
+    max-rp: 7499
+    sub-tiers: 4
+    entry-fee: 60
+
+  - id: predator
+    name: "猎杀"
+    color: "&c"
+    min-rp: 7500
+    max-rp: 999999
+    sub-tiers: 0
+    entry-fee: 75
+
+# ---------------- 单局结算 ----------------
+scoring:
+  # 名次分：按最终胜负给的基础分。
+  placement:
+    win: 120
+    draw: 30
+    loss: -60
+
+  # 比分差修正，用来区分「50:20 碾压」和「50:45 险胜」。
+  #   系数 = round((我方比分 - 对方比分) / 目标击杀数 × margin-weight)
+  # 结果会被夹在 ±margin-weight 之内。
+  margin-weight: 25
+
+  # 击杀分：每击杀加一次，封顶 kill-cap 个。
+  #
+  # 为什么要封顶：死斗里击杀就是胜负的成因，与名次分高度重合。
+  # 不封顶等于把同一件事算两遍，纯刷人头的收益会盖过团队胜负，
+  # 段位就退化成击杀排行榜了。
+  kill-points: 6
+  kill-cap: 10
+
+  # 队内排名分：按本队击杀数排名给分，第 1 名拿列表第 1 个值。
+  # 列表长度不限，超出名次拿 0 分。
+  team-placement-points: [15, 8, 3]
+
+  # 中途加入者只结算击杀分：不扣入场费、不给名次分和队内排名分。
+  #
+  # 理由：他只在场打了一部分，而名次分是「整场表现」的度量。
+  # 给中途加入者算名次分，等于奖励「专挑赢面大的局进去蹭分」。
+  # 击杀分是他实打实打出来的，照给。
+  late-join-kill-only: true
+
+# ---------------- 段位保护 ----------------
+protection:
+  # RP 下限。设 0 表示菜鸟段永远不会变成负分 ——
+  # 新手连输几局看到自己的分数变成负数，基本就弃坑了。
+  floor-rp: 0
+
+  # 升段保护场次：这段时间内 RP 即使跌破本段位下限也不掉段（RP 照扣），
+  # 保护用完后仍低于下限才真正降段。
+  # 0 表示不做升段保护。
+  demotion-shield-matches: 3

@@ -1,0 +1,1521 @@
+# WarZBombDefuse 商店配置文件
+# 说明：
+# 1. 插件不内置枪械逻辑，商店可发放原版物品，也可执行 TACZ/Vault/礼包插件命令。
+# 2. shop.items 是旧版兼容/公共商品；旧配置无需迁移，仍会按 team 字段正常过滤。
+# 3. shop.team-shops.T/CT.items 是阵营专属商品；同 ID 商品会覆盖上方公共商品，方便两边价格/展示/命令完全不同。
+# 4. 可使用 /wbd shopedit 编辑公共商城，/wbd shopedit T 或 /wbd shopedit CT 编辑指定阵营商城。
+#    编辑器内请使用普通鼠标点击摆放商品；Shift、数字键、拖拽铺货、一键整理等快捷操作会被拦截。
+# 5. page 是商品所在页码；slot 是该页内槽位。旧配置不写 page 时默认第 1 页。
+# 6. click-commands 是点击购买成功后执行的指令，支持变量 %player%、%uuid%、%item%。
+#    command-sender 可填 console 或 player，默认 console。旧字段 commands 仍兼容。
+#    command-repeat 可让一次购买重复执行命令，范围 1-64；旧配置默认 1 次。
+# 7. close-after-click 为 true 时，玩家点击该按钮后会自动关闭商店。
+# 8. team 可填 T、CT、ANY。ANY 表示双方都可购买；阵营专属商品不写时默认当前阵营。
+# 9. limit-per-round 控制每名玩家每回合最多购买次数，0 表示不限制，1 表示每回合一次。
+# 10. display-data/give-data 通常不要手动修改；日常只需要改 page、slot、team、price、limit-per-round、permission、click-commands 等字段。
+
+shop:
+  # 玩家每回合获得的商店打开物品。
+  open-item:
+    material: EMERALD
+    name: "&a装备菜单"
+    slot: 8
+
+  # 商店菜单大小，必须是 9 的倍数，范围 9-54。
+  size: 54
+
+  # 公共/旧版商店总页数。阵营专属商城可在 team-shops.<T|CT>.pages 单独覆盖。
+  pages: 3
+
+  # 公共/旧版商店标题。支持变量：%page%、%pages%、%team%、%team_name%。
+  title: "&8[&6WBD&8] &f爆破模式商店 &7%page%/%pages%"
+
+  # 翻页按钮设置。对应槽位会被上一页/页码/下一页按钮占用。
+  navigation:
+    previous-slot: 45
+    info-slot: 49
+    next-slot: 53
+    previous-item:
+      material: ARROW
+      name: "&e上一页"
+      lore:
+        - "&7点击返回第 &f%page%/%pages% &7页的上一页。"
+    next-item:
+      material: ARROW
+      name: "&e下一页"
+      lore:
+        - "&7点击前往第 &f%page%/%pages% &7页的下一页。"
+    info-item:
+      material: PAPER
+      name: "&6第 %page% / %pages% 页"
+      lore:
+        - "&7商店支持多页商品。"
+
+  # 公共/旧版商品列表。没有配置 team-shops 时，玩家只使用这里的商品。
+  items:
+    M67Grenade:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 2
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 300
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 1
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: LRTACTICAL_THROWABLE
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAUTFJUQUNUSUNBTF9USFJPV0FCTEVzcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AEhINHNJQUFBQUFBQUEvK05pWU9CZzRBN0pLTW92VDB6S1NmVk1ZZURMS1NwSlRDN0pURTdNc2NvMU0yY0FBSFZkcE00aUFBQUE="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: LRTACTICAL_THROWABLE
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 3
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAUTFJUQUNUSUNBTF9USFJPV0FCTEVzcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AEhINHNJQUFBQUFBQUEvK05pWU9CZzRBN0pLTW92VDB6S1NmVk1ZZURMS1NwSlRDN0pURTdNc2NvMU0yY0FBSFZkcE00aUFBQUE="
+
+    Molotov:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 3
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 600
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 1
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: LRTACTICAL_THROWABLE
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAUTFJUQUNUSUNBTF9USFJPV0FCTEVzcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AFBINHNJQUFBQUFBQUEvK05pWU9CZzRBN0pLTW92VDB6S1NmVk1ZUkRLS1NwSlRDN0pURTdNc2NyTno4a3Z5UzlqQUFDdjQxT0pKZ0FBQUE9PQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: LRTACTICAL_THROWABLE
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 3
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAUTFJUQUNUSUNBTF9USFJPV0FCTEVzcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AFBINHNJQUFBQUFBQUEvK05pWU9CZzRBN0pLTW92VDB6S1NmVk1ZUkRLS1NwSlRDN0pURTdNc2NyTno4a3Z5UzlqQUFDdjQxT0pKZ0FBQUE9PQ=="
+
+#     M18SmokeGrenade:
+#       # 商品所在页码。
+#       page: 1
+#       # 菜单中的槽位。
+#       slot: 4
+#       # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+#       team: ANY
+#       # 价格。购买成功后从插件内置金钱扣除。
+#       price: 300
+#       # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+#       limit-per-round: 1
+#       # 购买该商品所需权限。为空则不限制。
+#       permission: ""
+#       # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+#       display:
+#         material: LRTACTICAL_THROWABLE
+#       # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+#       display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAUTFJUQUNUSUNBTF9USFJPV0FCTEVzcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AFhINHNJQUFBQUFBQUEvK05pWU9CZzRBN0pLTW92VDB6S1NmVk1ZWkRJS1NwSlRDN0pURTdNc1NyT3pjOU9qVTh2U3MxTFRFbGxBQURjeGIvTUxBQUFBQT09"
+#       # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+#       give:
+#         material: LRTACTICAL_THROWABLE
+#       # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+#       give-slot: -1
+#       # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+#       give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAUTFJUQUNUSUNBTF9USFJPV0FCTEVzcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AFhINHNJQUFBQUFBQUEvK05pWU9CZzRBN0pLTW92VDB6S1NmVk1ZWkRJS1NwSlRDN0pURTdNc1NyT3pjOU9qVTh2U3MxTFRFbGxBQURjeGIvTUxBQUFBQT09"
+#
+#     M84Flashbang:
+#       # 商品所在页码。
+#       page: 1
+#       # 菜单中的槽位。
+#       slot: 5
+#       # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+#       team: ANY
+#       # 价格。购买成功后从插件内置金钱扣除。
+#       price: 200
+#       # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+#       limit-per-round: 2
+#       # 购买该商品所需权限。为空则不限制。
+#       permission: ""
+#       # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+#       display:
+#         material: LRTACTICAL_THROWABLE
+#       # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+#       display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAUTFJUQUNUSUNBTF9USFJPV0FCTEVzcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AFhINHNJQUFBQUFBQUEvK05pWU9CZzRBN0pLTW92VDB6S1NmVk1ZWkRJS1NwSlRDN0pURTdNc1VyTFNTek9pRTh2U3MxTFRFbGxBQUI0TThMN0xBQUFBQT09"
+#       # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+#       give:
+#         material: LRTACTICAL_THROWABLE
+#       # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+#       give-slot: -1
+#       # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+#       give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAUTFJUQUNUSUNBTF9USFJPV0FCTEVzcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AFhINHNJQUFBQUFBQUEvK05pWU9CZzRBN0pLTW92VDB6S1NmVk1ZWkRJS1NwSlRDN0pURTdNc1VyTFNTek9pRTh2U3MxTFRFbGxBQUI0TThMN0xBQUFBQT09"
+#
+    RE45:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 9
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 700
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 5
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDVWxGZFlBWEY4VWFxSktRY0ROMURVTGJNbzFUYy9KWldCeFRFMHhKK1pRUmdvNWx3SzFKWlhBakxUT2I4MHI0U0JnVUdFQVFCaVNNeHZiUUFBQUE9PQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 1
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDVWxGZFlBWEY4VWFxSktRY0ROMURVTGJNbzFUYy9KWldCeFRFMHhKK1pRUmdvNWx3SzFKWlhBakxUT2I4MHI0U0JnVUdFQVFCaVNNeHZiUUFBQUE9PQ=="
+
+    B3Wingman:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 10
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 800
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 5
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDVmxGZFlBWEY4a2pFSEF6ZFF6QzJ6S05VM1B5V1ZnU1hZMWRlVG1VRVlLT1pjQ3RTVVZ3SXkwVG0vTksrRWdZR0JsUUVBejlZUkkyc0FBQUE9"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 1
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDVmxGZFlBWEY4a2pFSEF6ZFF6QzJ6S05VM1B5V1ZnU1hZMWRlVG1VRVlLT1pjQ3RTVVZ3SXkwVG0vTksrRWdZR0JsUUVBejlZUkkyc0FBQUE9"
+
+    AlternatorSMG:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 12
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 1200
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDWGxGZFlBWEY4VlVZVkJ3TTNVTkF0c3lqVk56OGxsWUhGTVRURW41bEJHQ2ptWEFyVWxWY0NNdEk1dnpTdmhJR0JRWWdCQUxocWVTMXNBQUFB"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDWGxGZFlBWEY4VlVZVkJ3TTNVTkF0c3lqVk56OGxsWUhGTVRURW41bEJHQ2ptWEFyVWxWY0NNdEk1dnpTdmhJR0JRWWdCQUxocWVTMXNBQUFB"
+
+    VoltSMG:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 13
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 1700
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDWGxGZFlBWEY4U2w0eUJ3TTNVTkF0c3lqVk56OGxsWUhGTVRURW41bEJHQ2ptWEFyVWxWY0NNdEk1dnpTdmhJR0JRWVFCQUI1ZVpQSnNBQUFB"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDWGxGZFlBWEY4U2w0eUJ3TTNVTkF0c3lqVk56OGxsWUhGTVRURW41bEJHQ2ptWEFyVWxWY0NNdEk1dnpTdmhJR0JRWVFCQUI1ZVpQSnNBQUFB"
+
+    R97:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 14
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 2000
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDWGxGZFlBWEY4a2FVNUJ3TTNVTkF0c3lqVk56OGxsWUhGTVRURW41bEJHQ2ptWEFyVWxWY0NNdEk1dnpTdmhJR0JRWWdCQUtzRVZsNXNBQUFB"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDWGxGZFlBWEY4a2FVNUJ3TTNVTkF0c3lqVk56OGxsWUhGTVRURW41bEJHQ2ptWEFyVWxWY0NNdEk1dnpTdmhJR0JRWWdCQUtzRVZsNXNBQUFB"
+
+    CAR:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 15
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 2350
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDWGxGZFlBWEY4Y21JUkJ3TTNVTkF0c3lqVk56OGxsWUhGTVRURW41bEJHQ2ptWEFyVWxWY0NNdEk1dnpTdmhJR0JRWVFCQURDZTBUTnNBQUFB"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDWGxGZFlBWEY4Y21JUkJ3TTNVTkF0c3lqVk56OGxsWUhGTVRURW41bEJHQ2ptWEFyVWxWY0NNdEk1dnpTdmhJR0JRWVFCQURDZTBUTnNBQUFB"
+
+    XM1014:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 18
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 2000
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDVkpDWlhXZVVhR2hpYWNEQndBOFhjTW90U2ZmTlRVaGxZZ2wxOVBaa1poSUZpenFWQVRYa2xJQk9kODB2elNoZ1lHRmdZQUZraWNTOXJBQUFB"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDVkpDWlhXZVVhR2hpYWNEQndBOFhjTW90U2ZmTlRVaGxZZ2wxOVBaa1poSUZpenFWQVRYa2xJQk9kODB2elNoZ1lHRmdZQUZraWNTOXJBQUFB"
+
+    EVA8:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 19
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 2200
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDVWxGZFlBWEY4YWxtaUJRY0ROMURVTGJNbzFUYy9KWldCSmRqVjE1T1pRUmdvNWx3SzFKWlhBakxUT2I4MHI0U0JnWUdEQVFCWHBHaUdiUUFBQUE9PQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDVWxGZFlBWEY4YWxtaUJRY0ROMURVTGJNbzFUYy9KWldCSmRqVjE1T1pRUmdvNWx3SzFKWlhBakxUT2I4MHI0U0JnWUdEQVFCWHBHaUdiUUFBQUE9PQ=="
+
+    M600Spitfire:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 21
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 5200
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDV2xGZFlBWEY4UVVaaFZpRUhBemRRMkMyektOVTNQeVdWZ2NVeE5NU2ZtVUVZS09aY0N0U1hWd0l5MURtL05LK0VnWUZCbVFFQU4yMW1zVzRBQUFBPQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDV2xGZFlBWEY4UVVaaFZpRUhBemRRMkMyektOVTNQeVdWZ2NVeE5NU2ZtVUVZS09aY0N0U1hWd0l5MURtL05LK0VnWUZCbVFFQU4yMW1zVzRBQUFBPQ=="
+
+    DevotionLMG:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 22
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 5700
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 5
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDV2xGZFlBWEY4VlZWaFZpRUhBemRRMkMyektOVTNQeVdWZ2NVeE5NU2ZtVUVZS09aY0N0U1hWd0l5MURtL05LK0VnWUZCaFFFQW5BL0RqMjRBQUFBPQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDV2xGZFlBWEY4VlZWaFZpRUhBemRRMkMyektOVTNQeVdWZ2NVeE5NU2ZtVUVZS09aY0N0U1hWd0l5MURtL05LK0VnWUZCaFFFQW5BL0RqMjRBQUFBPQ=="
+
+    LStar:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 23
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 5700
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 5
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDV2xGZFlBWEY4VG5GSlloRUhBemRRMkMyektOVTNQeVdWZ2NVeE5NU2ZtVUVZS09aY0N0U1hWd0l5MURtL05LK0VnVUdkbndFQTNGaW1PRzRBQUFBPQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDV2xGZFlBWEY4VG5GSlloRUhBemRRMkMyektOVTNQeVdWZ2NVeE5NU2ZtVUVZS09aY0N0U1hWd0l5MURtL05LK0VnVUdkbndFQTNGaW1PRzRBQUFBPQ=="
+
+    R101:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 27
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 2000
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 5
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDVWxGZFlBWEY4a2FHQklRY0ROMURVTGJNbzFUYy9KWldCeFRFMHhKK1pRUmdvNWx3SzFKWlhBakxUT2I4MHI0U0JnVUdZQVFCMHpYQnRiUUFBQUE9PQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDVWxGZFlBWEY4a2FHQklRY0ROMURVTGJNbzFUYy9KWldCeFRFMHhKK1pRUmdvNWx3SzFKWlhBakxUT2I4MHI0U0JnVUdZQVFCMHpYQnRiUUFBQUE9PQ=="
+
+    Hemlok:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 28
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 2250
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 5
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDVmxGZFlBWEY4Umc0SEF6ZFF6QzJ6S05VM1B5V1ZnZFVwTkNnNGhKbEJHQ2pvWEFyVWxWY0NNdEk1dnpTdmhJR0JRWWdCQU1vbndaUnNBQUFB"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDVmxGZFlBWEY4Umc0SEF6ZFF6QzJ6S05VM1B5V1ZnZFVwTkNnNGhKbEJHQ2pvWEFyVWxWY0NNdEk1dnpTdmhJR0JRWWdCQU1vbndaUnNBQUFB"
+
+    G2:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 36
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 3300
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 5
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDVmxGZFlBWEY4dWhFSEF6ZFF6QzJ6S05VM1B5V1ZnU1hZMWRlVG1VRVlLT1pjQ3RTVVZ3SXkwVG0vTksrRWdZR0Jpd0VBUUwrVFJtc0FBQUE9"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDVmxGZFlBWEY4dWhFSEF6ZFF6QzJ6S05VM1B5V1ZnU1hZMWRlVG1VRVlLT1pjQ3RTVVZ3SXkwVG0vTksrRWdZR0Jpd0VBUUwrVFJtc0FBQUE9"
+
+    DoubleTake:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 37
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 3400
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 5
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDVmxGZFlBWEY4Y1JZSEF6ZFF6QzJ6S05VM1B5V1ZnU1hZMWRlVG1VRVlLT1pjQ3RTVVZ3SXkwVG0vTksrRWdZR0JqUUVBRkRqcUZXc0FBQUE9"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDVmxGZFlBWEY4Y1JZSEF6ZFF6QzJ6S05VM1B5V1ZnU1hZMWRlVG1VRVlLT1pjQ3RTVVZ3SXkwVG0vTksrRWdZR0JqUUVBRkRqcUZXc0FBQUE9"
+
+    LongbowDMR:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 38
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 3500
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 5
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0APRINHNJQUFBQUFBQUEvMFdPd1E2Q01CQkVCeEZUMFlTb3YrS0pHeUFxQjZLSkgwQWFhQkJEV3dOdFZMN1l6M0R4b0lmTlpHY3piOGNIWE14M1ZzcFhKS1dtN2UxZ2RlUjliTnRXbUV6RnZPdEU2ekI0QjZ1eUNyNTVQRU9hb3F4OUJKRXh2THhLb2N3bE9aMVRoa2xUSVNCdkNQbnY1TUJMdENYMTRScGVNeXovTVNLdVIySmY2cnNvZW1FS09keTJBTU9DL3UyYlR1UzZFcGhlMGp4enNTRXZzVlJJbWJIdGx3cGdoZzlyblg4YXh3QUFBQT09"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0APRINHNJQUFBQUFBQUEvMFdPd1E2Q01CQkVCeEZUMFlTb3YrS0pHeUFxQjZLSkgwQWFhQkJEV3dOdFZMN1l6M0R4b0lmTlpHY3piOGNIWE14M1ZzcFhKS1dtN2UxZ2RlUjliTnRXbUV6RnZPdEU2ekI0QjZ1eUNyNTVQRU9hb3F4OUJKRXh2THhLb2N3bE9aMVRoa2xUSVNCdkNQbnY1TUJMdENYMTRScGVNeXovTVNLdVIySmY2cnNvZW1FS09keTJBTU9DL3UyYlR1UzZFcGhlMGp4enNTRXZzVlJJbWJIdGx3cGdoZzlyblg4YXh3QUFBQT09"
+
+    Kraber:
+      # 商品所在页码。
+      page: 1
+      # 菜单中的槽位。
+      slot: 39
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 5750
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 5
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0APRINHNJQUFBQUFBQUEvMFdQUVE2Q01CQkZQeUlKZ2dsUnIrS0tIU0FxQzZJSkJ5QVZHa1ZwYTJBYWxSTjdESXNMWFV3bTh5ZnovaDhQc0RIYmFDRmVrUkRLVEc4TGl6M3JZOTIybkRJWnM2N2pyZVhDMldtWjFmRHA4UXhObGJmcTVDR0lpRmgxRVZ4U2tSeU9xWXRKVXlNdzJoQ3kzOHFDa3lodHVnZWIyTm5GL0g5bWtNc1IyVmZxenN1ZVV5bUc2eHB3NFJ2RGJkUHhYTlVjMHlMTk14c3JveVhhSkpJMHh2MVNNYjd3QWV6YkRBdklBQUFB"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 0
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0APRINHNJQUFBQUFBQUEvMFdQUVE2Q01CQkZQeUlKZ2dsUnIrS0tIU0FxQzZJSkJ5QVZHa1ZwYTJBYWxSTjdESXNMWFV3bTh5ZnovaDhQc0RIYmFDRmVrUkRLVEc4TGl6M3JZOTIybkRJWnM2N2pyZVhDMldtWjFmRHA4UXhObGJmcTVDR0lpRmgxRVZ4U2tSeU9xWXRKVXlNdzJoQ3kzOHFDa3lodHVnZWIyTm5GL0g5bWtNc1IyVmZxenN1ZVV5bUc2eHB3NFJ2RGJkUHhYTlVjMHlMTk14c3JveVhhSkpJMHh2MVNNYjd3QWV6YkRBdklBQUFB"
+
+#     defuse_kit:
+#       # 商品所在页码。
+#       page: 1
+#       # 菜单中的槽位。
+#       slot: 43
+#       # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+#       team: CT
+#       # 价格。购买成功后从插件内置金钱扣除。
+#       price: 400
+#       # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+#       limit-per-round: 1
+#       # 购买该商品所需权限。为空则不限制。
+#       permission: ""
+#       # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+#       display:
+#         material: SHEARS
+#         name: "&b拆弹器"
+#         lore:
+#           - "&7缩短拆除 C4 所需时间。"
+#           - "&6$400"
+#       # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+#       display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAGU0hFQVJTc3EAfgAAc3EAfgADdXEAfgAGAAAABHEAfgAIdAAJbWV0YS10eXBldAAMZGlzcGxheS1uYW1ldAAEbG9yZXVxAH4ABgAAAAR0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AJF7ImV4dHJhIjpbeyJib2xkIjpmYWxzZSwiaXRhbGljIjpmYWxzZSwidW5kZXJsaW5lZCI6ZmFsc2UsInN0cmlrZXRocm91Z2giOmZhbHNlLCJvYmZ1c2NhdGVkIjpmYWxzZSwiY29sb3IiOiJhcXVhIiwidGV4dCI6IuaLhuW8ueWZqCJ9XSwidGV4dCI6IiJ9c3IANmNvbS5nb29nbGUuY29tbW9uLmNvbGxlY3QuSW1tdXRhYmxlTGlzdCRTZXJpYWxpemVkRm9ybQAAAAAAAAAAAgABWwAIZWxlbWVudHN0ABNbTGphdmEvbGFuZy9PYmplY3Q7eHB1cQB+AAYAAAACdACneyJleHRyYSI6W3siYm9sZCI6ZmFsc2UsIml0YWxpYyI6ZmFsc2UsInVuZGVybGluZWQiOmZhbHNlLCJzdHJpa2V0aHJvdWdoIjpmYWxzZSwib2JmdXNjYXRlZCI6ZmFsc2UsImNvbG9yIjoiZ3JheSIsInRleHQiOiLnvKnnn63mi4bpmaQgQzQg5omA6ZyA5pe26Ze044CCIn1dLCJ0ZXh0IjoiIn10AIx7ImV4dHJhIjpbeyJib2xkIjpmYWxzZSwiaXRhbGljIjpmYWxzZSwidW5kZXJsaW5lZCI6ZmFsc2UsInN0cmlrZXRocm91Z2giOmZhbHNlLCJvYmZ1c2NhdGVkIjpmYWxzZSwiY29sb3IiOiJnb2xkIiwidGV4dCI6IiQ0MDAifV0sInRleHQiOiIifQ=="
+#       # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+#       give:
+#         material: SHEARS
+#         name: "&b拆弹器"
+#         slot: 5
+#       # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+#       give-slot: 5
+#       # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+#       give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAGU0hFQVJTc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAMZGlzcGxheS1uYW1ldXEAfgAGAAAAA3QACEl0ZW1NZXRhdAAKVU5TUEVDSUZJQ3QAkXsiZXh0cmEiOlt7ImJvbGQiOmZhbHNlLCJpdGFsaWMiOmZhbHNlLCJ1bmRlcmxpbmVkIjpmYWxzZSwic3RyaWtldGhyb3VnaCI6ZmFsc2UsIm9iZnVzY2F0ZWQiOmZhbHNlLCJjb2xvciI6ImFxdWEiLCJ0ZXh0Ijoi5ouG5by55ZmoIn1dLCJ0ZXh0IjoiIn0="
+#
+#     MadicKit:
+#       # 商品所在页码。
+#       page: 1
+#       # 菜单中的槽位。
+#       slot: 44
+#       # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+#       team: ANY
+#       # 价格。购买成功后从插件内置金钱扣除。
+#       price: 1000
+#       # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+#       limit-per-round: 1
+#       # 购买该商品所需权限。为空则不限制。
+#       permission: ""
+#       # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+#       display:
+#         material: POTION
+#         name: "医疗包"
+#         lore:
+#           - "短时间内恢复100点血量"
+#       # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+#       display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAGUE9USU9Oc3EAfgAAc3EAfgADdXEAfgAGAAAABXEAfgAIdAAJbWV0YS10eXBldAAMZGlzcGxheS1uYW1ldAAEbG9yZXQADmN1c3RvbS1lZmZlY3RzdXEAfgAGAAAABXQACEl0ZW1NZXRhcQB+ABF0AA1bIuWMu+eWl+WMhSJdc3IANmNvbS5nb29nbGUuY29tbW9uLmNvbGxlY3QuSW1tdXRhYmxlTGlzdCRTZXJpYWxpemVkRm9ybQAAAAAAAAAAAgABWwAIZWxlbWVudHN0ABNbTGphdmEvbGFuZy9PYmplY3Q7eHB1cQB+AAYAAAABdAAgIuefreaXtumXtOWGheaBouWkjTEwMOeCueihgOmHjyJzcQB+ABx1cQB+AAYAAAABc3EAfgAAc3EAfgADdXEAfgAGAAAAB3EAfgAIdAAGZWZmZWN0dAAIZHVyYXRpb250AAlhbXBsaWZpZXJ0AAdhbWJpZW50dAANaGFzLXBhcnRpY2xlc3QACGhhcy1pY29udXEAfgAGAAAAB3QADFBvdGlvbkVmZmVjdHNxAH4ADgAAAApzcQB+AA4AAABkc3EAfgAOAAAABXNyABFqYXZhLmxhbmcuQm9vbGVhbs0gcoDVnPruAgABWgAFdmFsdWV4cABzcQB+ADEBcQB+ADM="
+#       # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+#       give:
+#         material: POTION
+#         name: "医疗包"
+#         lore:
+#           - "短时间内恢复100点血量"
+#       # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+#       give-slot: -1
+#       # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+#       give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAGUE9USU9Oc3EAfgAAc3EAfgADdXEAfgAGAAAABXEAfgAIdAAJbWV0YS10eXBldAAMZGlzcGxheS1uYW1ldAAEbG9yZXQADmN1c3RvbS1lZmZlY3RzdXEAfgAGAAAABXQACEl0ZW1NZXRhcQB+ABF0AA1bIuWMu+eWl+WMhSJdc3IANmNvbS5nb29nbGUuY29tbW9uLmNvbGxlY3QuSW1tdXRhYmxlTGlzdCRTZXJpYWxpemVkRm9ybQAAAAAAAAAAAgABWwAIZWxlbWVudHN0ABNbTGphdmEvbGFuZy9PYmplY3Q7eHB1cQB+AAYAAAABdAAgIuefreaXtumXtOWGheaBouWkjTEwMOeCueihgOmHjyJzcQB+ABx1cQB+AAYAAAABc3EAfgAAc3EAfgADdXEAfgAGAAAAB3EAfgAIdAAGZWZmZWN0dAAIZHVyYXRpb250AAlhbXBsaWZpZXJ0AAdhbWJpZW50dAANaGFzLXBhcnRpY2xlc3QACGhhcy1pY29udXEAfgAGAAAAB3QADFBvdGlvbkVmZmVjdHNxAH4ADgAAAApzcQB+AA4AAABkc3EAfgAOAAAABXNyABFqYXZhLmxhbmcuQm9vbGVhbs0gcoDVnPruAgABWgAFdmFsdWV4cABzcQB+ADEBcQB+ADM="
+#
+    tacz_attachment:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 0
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 300
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUxDbXZzQ3JPVE04b2lTOU9MWWt2ckRCa0FBQmxhQUQ2SmdBQUFBPT0="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUxDbXZzQ3JPVE04b2lTOU9MWWt2ckRCa0FBQmxhQUQ2SmdBQUFBPT0="
+
+    tacz_attachment_2:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 1
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 300
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUxDbXZzQ3JPVE04b2lTOU9MWW5QU0RGakFBQ2p2R3lOSmdBQUFBPT0="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUxDbXZzQ3JPVE04b2lTOU9MWW5QU0RGakFBQ2p2R3lOSmdBQUFBPT0="
+
+    tacz_attachment_3:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 2
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 400
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUxDbXZzQ3JPVE04b2lTOU9MWW5QU0RGa0FBQmtLaTNDSmdBQUFBPT0="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUxDbXZzQ3JPVE04b2lTOU9MWW5QU0RGa0FBQmtLaTNDSmdBQUFBPT0="
+
+    tacz_attachment_4:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 3
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 400
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUxDbXZzQ3JPVE04b2lTOU9MWW5QU0RGaUFBQ25lUURwSmdBQUFBPT0="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUxDbXZzQ3JPVE04b2lTOU9MWW5QU0RGaUFBQ25lUURwSmdBQUFBPT0="
+
+    tacz_attachment_5:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 7
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 400
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xpbXZzTXBKTEU0dGlqZGtBQUFmdnRwcUlBQUFBQT09"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xpbXZzTXBKTEU0dGlqZGtBQUFmdnRwcUlBQUFBQT09"
+
+    tacz_attachment_6:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 8
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 400
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xpbXZzTXBKTEU0dGlqZGlBQURjN2ZkQklBQUFBQT09"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xpbXZzTXBKTEU0dGlqZGlBQURjN2ZkQklBQUFBQT09"
+
+    tacz_attachment_7:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 18
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 500
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUxDbXZzQ3JPVE04b2lTOU9MWW5QU0RGbUFBRG1TQnZ3SmdBQUFBPT0="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUxDbXZzQ3JPVE04b2lTOU9MWW5QU0RGbUFBRG1TQnZ3SmdBQUFBPT0="
+
+    tacz_attachment_8:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 19
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 500
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUtpbXZzQ3BPemk5SWpTOU9MWW5QcmNveVlRQUFxVDRMZVNjQUFBQT0="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUtpbXZzQ3BPemk5SWpTOU9MWW5QcmNveVlRQUFxVDRMZVNjQUFBQT0="
+
+    tacz_attachment_9:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 24
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 400
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0tUQzdDSkRCZ0RiNThWd0lnQUFBQT09"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0tUQzdDSkRCZ0RiNThWd0lnQUFBQT09"
+
+    tacz_attachment_10:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 25
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 600
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0tUQzdDSWpCZ0FZdE9oYklnQUFBQT09"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0tUQzdDSWpCZ0FZdE9oYklnQUFBQT09"
+
+    tacz_attachment_11:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 26
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 800
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0tUQzdDSmpCZ0JaaGZOQ0lnQUFBQT09"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0tUQzdDSmpCZ0JaaGZOQ0lnQUFBQT09"
+
+    tacz_attachment_12:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 33
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 600
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0t5czdDSkRCZ0FsdzZhTElnQUFBQT09"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0t5czdDSkRCZ0FsdzZhTElnQUFBQT09"
+
+    tacz_attachment_13:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 34
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 800
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0t5czdDSWpCZ0Rta0l1Z0lnQUFBQT09"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0t5czdDSWpCZ0Rta0l1Z0lnQUFBQT09"
+
+    tacz_attachment_14:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 35
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 1000
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0t5czdDSmpCZ0Nub1pDNUlnQUFBQT09"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0t5czdDSmpCZ0Nub1pDNUlnQUFBQT09"
+
+    tacz_attachment_9_2:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 36
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 600
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUtpbXZzQ3BPemk5SWpTOU9MWW5QcmNveVp3QUFhbTBtVWljQUFBQT0="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUtpbXZzQ3BPemk5SWpTOU9MWW5QcmNveVp3QUFhbTBtVWljQUFBQT0="
+
+    tacz_attachment_10_2:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 37
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 700
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUtpbXZzQ3BPemk5SWpTOU9MWW5QcmNveVl3QUFLMXc5U3ljQUFBQT0="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABQSDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdFUUtpbXZzQ3BPemk5SWpTOU9MWW5QcmNveVl3QUFLMXc5U3ljQUFBQT0="
+
+    tacz_attachment_15:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 42
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 400
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0x5YzdDSkRCZ0NUZEhlZklnQUFBQT09"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0x5YzdDSkRCZ0NUZEhlZklnQUFBQT09"
+
+    tacz_attachment_16:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 43
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 600
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0x5YzdDSWpCZ0JRSjFxMElnQUFBQT09"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0x5YzdDSWpCZ0JRSjFxMElnQUFBQT09"
+
+    tacz_attachment_17:
+      # 商品所在页码。
+      page: 2
+      # 菜单中的槽位。
+      slot: 44
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 800
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_ATTACHMENT
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0x5YzdDSmpCZ0FSRmtHdElnQUFBQT09"
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_ATTACHMENT
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 4
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAPVEFDWl9BVFRBQ0hNRU5Uc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAIaW50ZXJuYWx1cQB+AAYAAAADdAAISXRlbU1ldGF0AApVTlNQRUNJRklDdABISDRzSUFBQUFBQUFBLytOaVlPQmc0SEVzS1VsTXpzaE56U3Z4VEdIZ0xTbXZzQUxpK0x5YzdDSmpCZ0FSRmtHdElnQUFBQT09"
+
+    tacz_modern_kinetic_gun:
+      # 商品所在页码。
+      page: 3
+      # 菜单中的槽位。
+      slot: 0
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 0
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AIxINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXFLYSt3QXVMNDdISU9CbTZnbUZ0bVVhcHZma29xQTR0amFJZy9NNE13VU15NUZLZ3ByOFF4TnpmZk9iODByNFFCWkNvQUNEV0F6VnNBQUFBPQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 2
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AIxINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXFLYSt3QXVMNDdISU9CbTZnbUZ0bVVhcHZma29xQTR0amFJZy9NNE13VU15NUZLZ3ByOFF4TnpmZk9iODByNFFCWkNvQUNEV0F6VnNBQUFBPQ=="
+
+    tacz_modern_kinetic_gun_2:
+      # 商品所在页码。
+      page: 3
+      # 菜单中的槽位。
+      slot: 1
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 0
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AJBINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXRLYSt3QXVMNHZLVFVyQlFPQm02Z3NGdG1VYXB2ZmtvcUE0dGphSWcvTTRNd1VNeTVGS2d2cjhReE56ZmZPYjgwcjRRQlpEQUFWbEJLWVY0QUFBQT0="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 2
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AJBINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXRLYSt3QXVMNHZLVFVyQlFPQm02Z3NGdG1VYXB2ZmtvcUE0dGphSWcvTTRNd1VNeTVGS2d2cjhReE56ZmZPYjgwcjRRQlpEQUFWbEJLWVY0QUFBQT0="
+
+    tacz_modern_kinetic_gun_3:
+      # 商品所在页码。
+      page: 3
+      # 菜单中的槽位。
+      slot: 2
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 0
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AIxINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXVLYSt3QXVMNGpKUVVEZ1p1b0tCYlpsR3FiMzVLS2dPTFkyaUlQek9ETUZETXVSU29LNi9FTVRjMzN6bS9OSytFQVdRc0FIc2poWnRjQUFBQQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 2
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AIxINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXVLYSt3QXVMNGpKUVVEZ1p1b0tCYlpsR3FiMzVLS2dPTFkyaUlQek9ETUZETXVSU29LNi9FTVRjMzN6bS9OSytFQVdRc0FIc2poWnRjQUFBQQ=="
+
+    tacz_modern_kinetic_gun_4:
+      # 商品所在页码。
+      page: 3
+      # 菜单中的槽位。
+      slot: 3
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 0
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AIxINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXFLYSt3QXVMNDRtUU9CbTZnbUZ0bVVhcHZma29xQTR0amFJZy9NNE13VU15NUZLZ3ByOFF4TnpmZk9iODByNFFCWkNvQVdmYmpiMXNBQUFBPQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 2
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AIxINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXFLYSt3QXVMNDRtUU9CbTZnbUZ0bVVhcHZma29xQTR0amFJZy9NNE13VU15NUZLZ3ByOFF4TnpmZk9iODByNFFCWkNvQVdmYmpiMXNBQUFBPQ=="
+
+    tacz_modern_kinetic_gun_5:
+      # 商品所在页码。
+      page: 3
+      # 菜单中的槽位。
+      slot: 4
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 0
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AIxINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXVLYSt3QXVMNHZKd3NEZ1p1b0tCYlpsR3FiMzVLS2dPTFkyaUlQek9ETUZETXVSU29LNi9FTVRjMzN6bS9OSytFQVdRc0FLZ2NmQzljQUFBQQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 2
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AIxINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXVLYSt3QXVMNHZKd3NEZ1p1b0tCYlpsR3FiMzVLS2dPTFkyaUlQek9ETUZETXVSU29LNi9FTVRjMzN6bS9OSytFQVdRc0FLZ2NmQzljQUFBQQ=="
+
+    tacz_modern_kinetic_gun_6:
+      # 商品所在页码。
+      page: 3
+      # 菜单中的槽位。
+      slot: 5
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 0
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AJBINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXBLYSt3QXVMNDNNS3FLZzRHYnFDb1cyWlJxbTkrU2lvRGkyTm9pRDh6Z3pCUXpMa1VxQzJ2eERFM045ODV2elN2aEFGa0xnQjVSSjllWFFBQUFBPT0="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 2
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AJBINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXBLYSt3QXVMNDNNS3FLZzRHYnFDb1cyWlJxbTkrU2lvRGkyTm9pRDh6Z3pCUXpMa1VxQzJ2eERFM045ODV2elN2aEFGa0xnQjVSSjllWFFBQUFBPT0="
+
+    tacz_modern_kinetic_gun_7:
+      # 商品所在页码。
+      page: 3
+      # 菜单中的槽位。
+      slot: 6
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 0
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AIxINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXVLYSt3QXVMNGl1SVVEZ1p1b0tCYlpsR3FiMzVLS2dPTFkyaUlQek9ETUZETXVSU29LNi9FTVRjMzN6bS9OSytFQVdRc0FLQ01mRGRjQUFBQQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 2
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AIxINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXVLYSt3QXVMNGl1SVVEZ1p1b0tCYlpsR3FiMzVLS2dPTFkyaUlQek9ETUZETXVSU29LNi9FTVRjMzN6bS9OSytFQVdRc0FLQ01mRGRjQUFBQQ=="
+
+    tacz_modern_kinetic_gun_8:
+      # 商品所在页码。
+      page: 3
+      # 菜单中的槽位。
+      slot: 7
+      # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+      team: ANY
+      # 价格。购买成功后从插件内置金钱扣除。
+      price: 0
+      # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+      limit-per-round: 0
+      # 购买该商品所需权限。为空则不限制。
+      permission: ""
+      # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+      display:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AIxINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXFLYSt3QXVMNDNHd09CbTZnbUZ0bVVhcHZma29xQTR0amFJZy9NNE13VU15NUZLZ3ByOFF4TnpmZk9iODByNFFCWkNvQWM4bDM5VnNBQUFBPQ=="
+      # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+      give:
+        material: TACZ_MODERN_KINETIC_GUN
+      # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+      give-slot: 2
+      # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+      give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AIxINHNJQUFBQUFBQUEvK05pWUdCa0VQUklMSFlxemNsSkxmSE1jMG9zS2tyTlllUmdZSFV2emZOTVllQXFLYSt3QXVMNDNHd09CbTZnbUZ0bVVhcHZma29xQTR0amFJZy9NNE13VU15NUZLZ3ByOFF4TnpmZk9iODByNFFCWkNvQWM4bDM5VnNBQUFBPQ=="
+
+
+  # 阵营独立商城。玩家打开商店时会先加载公共商品，再用本阵营同 ID 商品覆盖。
+  team-shops:
+    T:
+      # 该阵营商城标题。支持变量：%page%、%pages%、%team%、%team_name%。
+      title: "&8[&6WBD&8] &cT 方装备商店 &7%page%/%pages%"
+      # 该阵营商城页数。不配置阵营商城时会使用上方 shop.pages。
+      pages: 3
+      # 该阵营专属商品；同 ID 会覆盖公共商品。
+      items:
+        G17:
+          # 商品所在页码。
+          page: 1
+          # 菜单中的槽位。
+          slot: 1
+          # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+          team: T
+          # 价格。购买成功后从插件内置金钱扣除。
+          price: 200
+          # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+          limit-per-round: 1
+          # 购买该商品所需权限。为空则不限制。
+          permission: ""
+          # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+          display:
+            material: TACZ_MODERN_KINETIC_GUN
+          # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+          display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDV0pDWlhXYVhuNUNkbnh4dWFjekJ3QTRYZE1vdFNmZk5UVWhsWWdsMTlQWmtaaElGaXpxVkFmWGtsSUVPZDgwdnpTaGdZR0VRWUFCNmlQVTV1QUFBQQ=="
+          # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+          give:
+            material: TACZ_MODERN_KINETIC_GUN
+          # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+          give-slot: 1
+          # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+          give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDV0pDWlhXYVhuNUNkbnh4dWFjekJ3QTRYZE1vdFNmZk5UVWhsWWdsMTlQWmtaaElGaXpxVkFmWGtsSUVPZDgwdnpTaGdZR0VRWUFCNmlQVTV1QUFBQQ=="
+
+        VK47:
+          # 商品所在页码。
+          page: 1
+          # 菜单中的槽位。
+          slot: 31
+          # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+          team: T
+          # 价格。购买成功后从插件内置金钱扣除。
+          price: 2700
+          # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+          limit-per-round: 5
+          # 购买该商品所需权限。为空则不限制。
+          permission: ""
+          # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+          display:
+            material: TACZ_MODERN_KINETIC_GUN
+          # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+          display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDVWxGZFlBWEY4UVVWU0lRY0ROMURVTGJNbzFUYy9KWldCeFRFMHhKK1pRUmdvNWx3SzFKWlhBakxUT2I4MHI0U0JnVUdZQVFEODJzSGFiUUFBQUE9PQ=="
+          # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+          give:
+            material: TACZ_MODERN_KINETIC_GUN
+          # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+          give-slot: 0
+          # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+          give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDVWxGZFlBWEY4UVVWU0lRY0ROMURVTGJNbzFUYy9KWldCeFRFMHhKK1pRUmdvNWx3SzFKWlhBakxUT2I4MHI0U0JnVUdZQVFEODJzSGFiUUFBQUE9PQ=="
+
+    CT:
+      # 该阵营商城标题。支持变量：%page%、%pages%、%team%、%team_name%。
+      title: "&8[&6WBD&8] &bCT 方装备商店 &7%page%/%pages%"
+      # 该阵营商城页数。不配置阵营商城时会使用上方 shop.pages。
+      pages: 3
+      # 该阵营专属商品；同 ID 会覆盖公共商品。
+      items:
+        P320:
+          # 商品所在页码。
+          page: 1
+          # 菜单中的槽位。
+          slot: 0
+          # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+          team: CT
+          # 价格。购买成功后从插件内置金钱扣除。
+          price: 200
+          # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+          limit-per-round: 0
+          # 购买该商品所需权限。为空则不限制。
+          permission: ""
+          # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+          display:
+            material: TACZ_MODERN_KINETIC_GUN
+          # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+          display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDV0pDWlhXUlVZR3hsd01IQURoZHd5aTFKOTgxTlNHVmlDWFgwOW1SbUVnV0xPcFVBOWVTVWdBNTN6Uy9OS0dCZ1llQmdBOFg0K05Xb0FBQUE9"
+          # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+          give:
+            material: TACZ_MODERN_KINETIC_GUN
+          # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+          give-slot: 1
+          # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+          give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKBINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTUhDV0pDWlhXUlVZR3hsd01IQURoZHd5aTFKOTgxTlNHVmlDWFgwOW1SbUVnV0xPcFVBOWVTVWdBNTN6Uy9OS0dCZ1llQmdBOFg0K05Xb0FBQUE9"
+
+        R201:
+          # 商品所在页码。
+          page: 1
+          # 菜单中的槽位。
+          slot: 30
+          # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+          team: CT
+          # 价格。购买成功后从插件内置金钱扣除。
+          price: 3100
+          # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+          limit-per-round: 0
+          # 购买该商品所需权限。为空则不限制。
+          permission: ""
+          # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+          display:
+            material: TACZ_MODERN_KINETIC_GUN
+          # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+          display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDVWxGZFlBWEY4a1pHQklRY0ROMURVTGJNbzFUYy9KWldCeFRFMHhKK1pRUmdvNWx3SzFKWlhBakxUT2I4MHI0U0JnVUdVQVFDZ1JnaHNiUUFBQUE9PQ=="
+          # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+          give:
+            material: TACZ_MODERN_KINETIC_GUN
+          # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+          give-slot: 0
+          # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+          give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAXVEFDWl9NT0RFUk5fS0lORVRJQ19HVU5zcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AKRINHNJQUFBQUFBQUEvK05pWUdCbTRIUXB6YzJ0ZE16TnpRZnlYakF5Q0hva0ZqdVY1dVNrbG5qbU9TVVdGYVhtTUhJd3NMcVg1bm1tTVBDVWxGZFlBWEY4a1pHQklRY0ROMURVTGJNbzFUYy9KWldCeFRFMHhKK1pRUmdvNWx3SzFKWlhBakxUT2I4MHI0U0JnVUdVQVFDZ1JnaHNiUUFBQUE9PQ=="
+
+#         defuse_kit:
+#           # 商品所在页码。
+#           page: 1
+#           # 菜单中的槽位。
+#           slot: 42
+#           # 限制购买队伍。ANY 表示双方都可购买；阵营专属商品通常保持当前阵营即可。
+#           team: CT
+#           # 价格。购买成功后从插件内置金钱扣除。
+#           price: 400
+#           # 每名玩家每回合最多购买次数。0 表示不限制，1 表示每回合一次。
+#           limit-per-round: 1
+#           # 购买该商品所需权限。为空则不限制。
+#           permission: ""
+#           # 菜单里展示的物品摘要，方便人工查看；如果下方 display-data 存在，实际展示会优先使用完整数据。
+#           display:
+#             material: SHEARS
+#             name: "&bCT 专属拆弹器"
+#             lore:
+#               - "&7只会出现在 CT 方商城。"
+#               - "&7缩短拆除 C4 所需时间。"
+#               - "&6$400"
+#           # 完整展示物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+#           display-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAGU0hFQVJTc3EAfgAAc3EAfgADdXEAfgAGAAAABHEAfgAIdAAJbWV0YS10eXBldAAMZGlzcGxheS1uYW1ldAAEbG9yZXVxAH4ABgAAAAR0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AJp7ImV4dHJhIjpbeyJib2xkIjpmYWxzZSwiaXRhbGljIjpmYWxzZSwidW5kZXJsaW5lZCI6ZmFsc2UsInN0cmlrZXRocm91Z2giOmZhbHNlLCJvYmZ1c2NhdGVkIjpmYWxzZSwiY29sb3IiOiJhcXVhIiwidGV4dCI6IkNUIOS4k+WxnuaLhuW8ueWZqCJ9XSwidGV4dCI6IiJ9c3IANmNvbS5nb29nbGUuY29tbW9uLmNvbGxlY3QuSW1tdXRhYmxlTGlzdCRTZXJpYWxpemVkRm9ybQAAAAAAAAAAAgABWwAIZWxlbWVudHN0ABNbTGphdmEvbGFuZy9PYmplY3Q7eHB1cQB+AAYAAAADdACneyJleHRyYSI6W3siYm9sZCI6ZmFsc2UsIml0YWxpYyI6ZmFsc2UsInVuZGVybGluZWQiOmZhbHNlLCJzdHJpa2V0aHJvdWdoIjpmYWxzZSwib2JmdXNjYXRlZCI6ZmFsc2UsImNvbG9yIjoiZ3JheSIsInRleHQiOiLlj6rkvJrlh7rnjrDlnKggQ1Qg5pa55ZWG5Z+O44CCIn1dLCJ0ZXh0IjoiIn10AKd7ImV4dHJhIjpbeyJib2xkIjpmYWxzZSwiaXRhbGljIjpmYWxzZSwidW5kZXJsaW5lZCI6ZmFsc2UsInN0cmlrZXRocm91Z2giOmZhbHNlLCJvYmZ1c2NhdGVkIjpmYWxzZSwiY29sb3IiOiJncmF5IiwidGV4dCI6Iue8qeefreaLhumZpCBDNCDmiYDpnIDml7bpl7TjgIIifV0sInRleHQiOiIifXQAjHsiZXh0cmEiOlt7ImJvbGQiOmZhbHNlLCJpdGFsaWMiOmZhbHNlLCJ1bmRlcmxpbmVkIjpmYWxzZSwic3RyaWtldGhyb3VnaCI6ZmFsc2UsIm9iZnVzY2F0ZWQiOmZhbHNlLCJjb2xvciI6ImdvbGQiLCJ0ZXh0IjoiJDQwMCJ9XSwidGV4dCI6IiJ9"
+#           # 实际发放给玩家的物品摘要；如果下方 give-data 存在，实际发放会优先使用完整数据。
+#           give:
+#             material: SHEARS
+#             name: "&b拆弹器"
+#             slot: 5
+#           # 发放到背包槽位。小于 0 或槽位非法时会自动 addItem。
+#           give-slot: 5
+#           # 完整发放物品数据，优先读取。由 /wbd shopedit 自动生成，通常不要手动修改。
+#           give-data: "bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAGU0hFQVJTc3EAfgAAc3EAfgADdXEAfgAGAAAAA3EAfgAIdAAJbWV0YS10eXBldAAMZGlzcGxheS1uYW1ldXEAfgAGAAAAA3QACEl0ZW1NZXRhdAAKVU5TUEVDSUZJQ3QAkXsiZXh0cmEiOlt7ImJvbGQiOmZhbHNlLCJpdGFsaWMiOmZhbHNlLCJ1bmRlcmxpbmVkIjpmYWxzZSwic3RyaWtldGhyb3VnaCI6ZmFsc2UsIm9iZnVzY2F0ZWQiOmZhbHNlLCJjb2xvciI6ImFxdWEiLCJ0ZXh0Ijoi5ouG5by55ZmoIn1dLCJ0ZXh0IjoiIn0="
+#

@@ -1,0 +1,45 @@
+name: WBDTeamDeathmatch
+# 版本号由 Maven 在打包时从 pom.xml 注入，避免 plugin.yml 与 pom 不同步
+version: ${project.version}
+main: alphahu.tdm.WBDTeamDeathmatch
+api-version: '1.20'
+authors: [AlphaHu]
+description: WarZBombDefuse 生态下的团队死斗模式：无限复活、限时击杀赛，并复用 WBDAddon 的附加功能。
+website: https://github.com/DICEALPHAHU/WBDAddon
+
+# 硬依赖：WarZBombDefuse
+#
+# 竞技场坐标格式、商店配置格式、以及商品里内嵌的 Bukkit 序列化物品数据
+# （bukkit-object:），全部沿用它的那一套。没有它，本插件连一份场地、
+# 一件商品都读不出来，硬撑着启动只会留下一堆空场地和空商店，
+# 让服主对着一堆没有原因的现象去猜。
+#
+# 所以声明成 depend：服务端在缺少它时根本不会加载本插件，日志里会直接写
+# 「Unknown/missing dependency」。这与「加载后再自己禁用」的区别很重要 ——
+# 后者会留下一个注册好但没挂 executor 的 /tdm 命令。
+depend:
+  - WarZBombDefuse
+
+# 软依赖：WBDAddon
+#
+# 它提供 WbdAddonApi。注册本模式后即可复用饥饿锁定、防第三人称、
+# JourneyMap 队伍桥接、武器名解析与伤害追踪。没装时本插件照常运行，
+# 只是这些附加功能不可用 —— 启动日志会把不可用的项逐条列出来。
+softdepend:
+  - WBDAddon
+
+commands:
+  tdm:
+    description: 团队死斗主命令
+    # 别名里刻意不再重复 tdm 本身：命令名与别名同名是注册期的无谓冲突，
+    # 某些服务端实现下会让别名注册失败。真要区分，用 teamdeathmatch 就够了。
+    aliases: [teamdeathmatch]
+    usage: /tdm help
+
+permissions:
+  tdm.use:
+    description: 允许加入、离开团队死斗比赛
+    default: true
+  tdm.admin:
+    description: 允许管理竞技场、强制开始/结束比赛、重载配置
+    default: op

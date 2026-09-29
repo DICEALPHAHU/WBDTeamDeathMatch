@@ -1,0 +1,24 @@
+#
+# https://help.github.com/articles/dealing-with-line-endings/
+#
+# 默认：所有文本文件一律以 LF 存入仓库。
+#
+# 缺了这一条时，换行交给 core.autocrlf 自行决定 —— 同一个文件在不同机器上
+# 会签出成不同的换行，于是出现「没改过却显示已修改」，或者每次 add 都刷一屏
+# "LF will be replaced by CRLF" 的警告。统一成 LF 之后，Windows 与 Linux
+# 上的克隆结果一致，diff 里也不会混进整文件的换行改动。
+* text=auto eol=lf
+
+# Windows 批处理必须保持 CRLF，否则 cmd 解析会出问题。
+# 本项目的启动脚本属于这一类。
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+
+# 二进制文件不做任何转换
+*.jar           binary
+*.png           binary
+*.jpg           binary
+*.zip           binary
+
+# 默认情况下不显示这些文件的语言统计（避免仓库语言构成被文档淹没）
+docs/**         linguist-documentation

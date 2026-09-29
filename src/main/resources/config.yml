@@ -1,0 +1,430 @@
+# ============================================================
+#  WBDTeamDeathmatch 团队死斗模式 配置文件
+# ============================================================
+# 说明：
+# 1. 场地（出生点、边界、大厅）在 arenas.yml 里配置，本文件只管玩法参数。
+# 2. 本文件的值是全局默认值；arenas.yml 里每个场地可以单独覆盖其中一部分。
+# 3. 改完执行 /tdm reload 生效，无需重启服务器。
+# ============================================================
+
+match:
+  # 达到该击杀数立即结束比赛，先到的一方获胜。
+  # 设为 0 表示不设击杀目标，只按时间判定。
+  target-kills: 50
+
+  # 比赛时间上限（秒）。时间到时击杀多的一方获胜；
+  # 双方击杀数完全相同则判为平局（不拖加时，直接结算）。
+  time-limit-seconds: 900
+
+  # 开局前倒计时（秒）。倒计时期间玩家可以走动，但不会受到伤害。
+  countdown-seconds: 10
+
+  # 比赛结束后的结算展示时长（秒），走完再决定重开还是清场。
+  end-delay-seconds: 15
+
+  # 结算后是否自动开始下一场。
+  # 关掉时比赛结束后会把所有人送回大厅并停在等待状态，由管理员手动开。
+  auto-restart: true
+
+  # 最少开局人数。场上总人数达到它才开始倒计时。
+  min-players: 2
+
+  # 加入时是否自动把人塞进人数少的一队，保持两队人数尽量接近。
+  # 关掉后玩家可用 /tdm join <场地> t|ct 自己选边。
+  auto-balance: true
+
+respawn:
+  # 阵亡后等待多少秒复活。这是「无限复活」的核心参数：
+  # 设为 0 就是立刻原地复活。
+  delay-seconds: 3
+
+  # 复活后的无敌保护时长（秒），可以是小数。
+  # 保护期内免疫一切伤害，避免刚出生就被守尸。
+  protection-seconds: 2.0
+
+  # 保护期内一旦对敌人造成伤害，是否立即解除保护。
+  # 建议保持 true：否则会出现「顶着无敌冲上去打人」的白嫖打法。
+  break-protection-on-attack: true
+
+  # 阵亡是否掉落物品。死斗默认不掉，免得一地掉落物既卡服又影响节奏。
+  drop-items: false
+
+  # 复活点选取方式：
+  #   random = 从己方出生点里随机挑一个（推荐，人多时不会全挤在同一点）
+  #   first  = 永远用己方出生点列表的第一个
+  spawn-mode: random
+
+combat:
+  # 是否允许友军伤害。默认关闭，误伤队友只提示不扣血。
+  friendly-fire: false
+
+  # 是否由本插件接管死亡消息（设为 false 会露出原版「xxx 死了」的消息）。
+  override-death-message: true
+
+  # 击杀播报格式。可用占位符：%killer% %victim% %weapon% %killer_team% %victim_team%
+  kill-message: "&c%killer% &7[&e%weapon%&7] &f%victim%"
+
+  # 没有击杀者时（摔死、掉虚空、自杀等）的播报。占位符：%victim%
+  death-message-no-killer: "&f%victim% &7阵亡"
+
+  # 连杀播报：每累计多少击杀广播一次，0 表示关闭。
+  # 死亡会清零连杀计数。
+  killstreak-broadcast: 5
+
+  # 是否禁止比赛中丢弃物品。默认开启。
+  #
+  # 一刀切而不是只拦「商店发出的那些」：死斗里装备全都免费、随时能从商店换，
+  # 丢东西本来就没有实际意义。全面禁止的好处是没有漏网之鱼 ——
+  # 只拦商店物品的话，「买一个丢地上、再买一个、捡回来」这条刷装备的路子
+  # 依然走得通。
+  #
+  # 只对比赛中的玩家生效：大厅和其他玩法不受影响。
+  prevent-item-drop: true
+
+hud:
+  # 击杀提示（屏幕中下方那行 ActionBar）。
+  #
+  # 它**只在击杀时出现**，两秒后淡出，平时这一行是空的 ——
+  # 常驻信息都被侧边栏和 BossBar 占着了，把 ActionBar 留给「刚刚发生了什么」，
+  # 击杀回执才不会被别的东西盖掉。
+  # 占位符：%weapon% 武器名、%victim% 受害者、%money% 本次赏金
+  kill-message-format: "&e[%weapon%] &f%victim% &a+%money%"
+  kill-message-duration-ms: 2000
+
+  # 复活倒计时 BossBar（只对已阵亡、正在等待复活的玩家显示）
+  respawn-bar-title: "&c%seconds% &7秒后复活"
+  respawn-bar-color: RED
+  respawn-bar-style: SOLID
+
+  # 复活无敌保护 BossBar（复活后显示，保护结束即消失）。
+  #
+  # 把无敌时间摆出来是必要的：保护期内玩家免疫伤害，界面上如果毫无表示，
+  # 他会以为自己打不动人、或者以为对手有问题 —— 几秒的信息空缺很容易被当成故障。
+  protection-bar-title: "&b无敌 &f%seconds% &b秒"
+  protection-bar-color: BLUE
+  protection-bar-style: SOLID
+
+  # 比赛倒计时 BossBar。
+  match-bar-enabled: true
+  match-bar-format: "&e%time% &7| &cT &f%t_score% &7- &bCT &f%ct_score%"
+  match-bar-color: YELLOW
+  match-bar-style: SOLID
+
+  # 侧边栏记分板。
+  #
+  # 每人一块**独立**计分板，所以这里可以放个人数据（%kills% %deaths% %kd%）。
+  #
+  # 代价与补偿：原版队伍数据是跟着玩家「当前所用的那块计分板」下发的，
+  # 玩家一切到自己的板子，就收不到主计分板上的 wbd_* 队伍了 ——
+  # JourneyMap 的队友可见 / 敌军隐藏会静默失效。插件会把那些队伍**镜像**过来
+  # （见 MatchHud#mirrorTeams），所以两者可以并存。
+  #
+  # 占位符：
+  #   %money% 金钱   %kills% %deaths% %kd% 个人战绩   %target% 目标击杀数
+  #   %tier% 当前段位（非排位场地或没有档案时显示「未定级」）
+  #   %respawn% 自己还有几秒复活   %alive% %size% 存活/总人数   %arena% 场地名
+  #   %t_score% %ct_score% %time% —— 这三项 BossBar 上已经有了，别在这里重复
+  scoreboard-enabled: true
+  scoreboard-title: "&6&lWBDTDM团队死斗"
+  scoreboard-lines:
+    - "&7目标 &f%target% &7杀"
+    - ""
+    - "&7金钱 &e$%money%"
+    - "&7段位 %tier%"
+    - "&7击杀 &f%kills%"
+    - "&7死亡 &f%deaths%"
+    - "&7K/D &f%kd%"
+
+# 经济。
+#
+# 死斗不是「全免费自选」：打得好的队伍先买得起好枪，这条正反馈是模式的一部分。
+# 价格来自 shop.yml 里每件商品的 price 字段（那份配置本来就有，之前被忽略）。
+economy:
+  # 关掉就回到全免费，price 字段重新被忽略。
+  enabled: true
+
+  # 每场比赛开始时发给每人的启动资金。
+  # 刻意是「每场重置」而不是跨场累积：钱一路带着走，优势会滚成雪球，
+  # 后半场基本只剩一边在打。
+  # 同时也会被下面的 max-money 夹住 —— 写超了不会发出去，只会收到上限值。
+  start-money: 800
+
+  # 每次击杀的基础赏金。
+  kill-reward: 300
+
+  # 连杀额外赏金：第 N 连杀时额外多给 (N-1) × 本值。
+  # 例：本值 100 时，第 2 杀 +100、第 3 杀 +200、第 4 杀 +300……
+  killstreak-bonus: 100
+
+  # 连杀额外部分的封顶。不封顶的话，滚起来的高手会迅速「钱多到随便买、
+  # 还越打越强」，把局面推向一边倒；有限的正反馈才留得住翻盘空间。
+  killstreak-bonus-max: 500
+
+  # 金钱上限。玩家的钱永远不会超过这个数。
+  #
+  # 这是「持有上限」，不是「每局获取上限」：击杀赏金、连杀加成、
+  # 启动资金全都受它约束，到顶之后击杀播报会显示真实入账（可能是 +0），
+  # 而不是照样喊「+300」—— 那样玩家会以为钱被吞了。
+  max-money: 16000
+
+# 出生装备。
+# 每一条可以是三类东西：
+#   1. 序列化物品：bukkit-object: 开头的一整段物品数据（推荐）
+#      这就是 WarZBombDefuse 的 give-data 用的同一种数据，里面带着物品的全部
+#      NBT —— 模组枪械的枪械 id、弹药、开火模式、配件、皮肤一个不少，
+#      发出去的就是同一件物品。枪、刀、手雷都该用它。
+#      手里的物品执行 /tdm exportitem，就能把这一串导出到
+#      plugins/WBDTeamDeathmatch/exported-item.yml，整段复制过来即可。
+#   2. 原版物品：MATERIAL、MATERIAL:数量、MATERIAL:数量:耐久损耗
+#      例如 STONE_SWORD、ARROW:16、DIAMOND_CHESTPLATE:1:50
+#   3. 控制台命令：以 cmd: 开头，%player% 会替换成玩家名
+#      例如 cmd:tacz give %player% p320
+#      ⚠ 发枪不建议用这条：模组自己的 give 命令生成出来的物品未必和你要的
+#        那一件一致，而且每次复活都会重跑一遍。
+#
+# 前两条还可以再加一个落点前缀「槽位@」，例如 1@bukkit-object:rO0AB... 表示
+# 放进第 2 格（槽位从 0 数起）。不写则自动找第一个空位。
+loadout:
+  # 是否在投放时清空背包。
+  # ⚠ 只在「进入比赛」时生效；阵亡复活不会清背包 —— 玩家在商店里挑好的
+  #   装备不该因为一次死亡就白买。
+  clear-inventory: true
+
+  # 进入比赛与每次复活时重置到的血量（20.0 = 满血）
+  health: 20.0
+
+  # 死斗里的最大血量上限。0 表示不改动。
+  #
+  # 想让死斗比爆破更耐打（例如 40 点）就填在这里。改的是玩家属性的基础值，
+  # 退出比赛时由离场快照还原成进入前的数值 —— 不会把「死斗的血条」带回大厅。
+  max-health: 20.0
+
+  # 两队共同的装备。
+  #
+  # 默认留空：装备交给商店，玩家进场后自己选。这样「选装备」才是一个真正的
+  # 决策，而不是在出生装备之上再叠一层。想保留初始装备就往下面加条目。
+  #
+  # 下面是一颗 M67 手雷的真实物品数据（与 WBD 商店里那件是同一条数据）。
+  # 想开局就发，把这一行整段复制到 common: 下面、去掉行首的 # 即可。
+  # 3@ 表示放进第 4 格 —— 和商店里手雷的落点一致，不会跟别处打架。
+  #
+  # - "3@bukkit-object:rO0ABXNyABpvcmcuYnVra2l0LnV0aWwuaW8uV3JhcHBlcvJQR+zxEm8FAgABTAADbWFwdAAPTGphdmEvdXRpbC9NYXA7eHBzcgA1Y29tLmdvb2dsZS5jb21tb24uY29sbGVjdC5JbW11dGFibGVNYXAkU2VyaWFsaXplZEZvcm0AAAAAAAAAAAIAAkwABGtleXN0ABJMamF2YS9sYW5nL09iamVjdDtMAAZ2YWx1ZXNxAH4ABHhwdXIAE1tMamF2YS5sYW5nLk9iamVjdDuQzlifEHMpbAIAAHhwAAAABHQAAj09dAABdnQABHR5cGV0AARtZXRhdXEAfgAGAAAABHQAHm9yZy5idWtraXQuaW52ZW50b3J5Lkl0ZW1TdGFja3NyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAA2JdAAUTFJUQUNUSUNBTF9USFJPV0FCTEVzcQB+AABzcQB+AAN1cQB+AAYAAAADcQB+AAh0AAltZXRhLXR5cGV0AAhpbnRlcm5hbHVxAH4ABgAAAAN0AAhJdGVtTWV0YXQAClVOU1BFQ0lGSUN0AEhINHNJQUFBQUFBQUEvK05pWU9CZzRBN0pLTW92VDB6S1NmVk1ZZURMS1NwSlRDN0pURTdNc2NvMU0yY0FBSFZkcE00aUFBQUE="
+  common: []
+
+  # T 方额外装备（在 common 之外追加）
+  t: []
+
+  # CT 方额外装备（在 common 之外追加）
+  ct: []
+
+  # 开局默认装备：直接写**商店里商品的 id**，开局自动发放且不扣钱。
+  #
+  # 为什么不另配一套物品清单：这样复用购买那套落点与覆盖逻辑 ——
+  # 默认给的枪落在哪一格，和玩家自己买它时完全一致；将来调了商品的 give-slot，
+  # 默认装备会跟着走，不必两头改。模组枪械的完整物品数据也是现成的。
+  #
+  # 写错了（id 拼错、或那个商品不属于该阵营）启动时会在控制台警告。
+  default-items:
+    # 双方都发。下面默认只给一把刀。
+    # ⚠ 手雷刻意不发：开局人人一颗手雷，一进场就是满天乱扔，不如让玩家自己花钱买。
+    common:
+      - "tacz_modern_kinetic_gun"   # 第 3 页的刀（→ 第 3 槽）
+
+    # T 方额外（手枪落在第 2 槽）
+    t:
+      - "G17"
+
+    # CT 方额外（手枪落在第 2 槽）
+    ct:
+      - "P320"
+
+# 装备商店。
+#
+# 商店**直接兼容 WarZBombDefuse 的 shop.yml 格式**：商品页码、阵营过滤、
+# 翻页按钮，以及枪械那种内嵌了完整物品数据的商品都能原样读出来。
+# 所以你在爆破模式里配好的那份可以直接共用，不必重写一遍。
+#
+# 发放走的是配置里内嵌的完整物品数据（give-data，Bukkit 序列化）——
+# 和 WBD 商店的 give 是同一条路：模组枪械的枪械 id、弹药、开火模式、配件、
+# NBT 全部原样还原，发到手里就是同一件物品。不写 give-data 的商品
+# 只能按材质新建一个空壳，模组物品那样发必然是错的，启动日志会点名警告。
+#
+# 所有商品的价格由 shop 配置里的 price 字段决定（见上方 economy）。
+shop:
+  # 是否启用商店。关掉后不会发放商店物品，/tdm shop 也会提示未启用。
+  enabled: true
+
+  # 商店配置来源：
+  #   wbd   = 直接读 WarZBombDefuse 的那份，与爆破模式共用（默认）
+  #   local = 用本插件数据目录里的 shop.yml
+  #
+  # 默认共用 WBD 那份，是因为你很可能已经在那边把枪、投掷物、配件都配好了，
+  # 商品里内嵌着完整物品数据（Bukkit 序列化），重配一遍不现实。
+  #
+  # 插件**自带**的那份 shop.yml（source 改成 local 时才会用到）是**空商店**，
+  # 与 WarZBombDefuse 刚装上时一样，**不带任何武器** ——
+  # 卖什么枪、定什么价该由服主决定，插件不替你预设。
+  #
+  # ⚠ 共用 WBD 那份时注意：它的 give-slot 大量是 -1（那边买什么都往空位塞），
+  #   直接拿到死斗里会让装备挤进同一格，表现就是「刀跑到第一格」。
+  #   用下面的 slot-overrides / material-slots 调落点，或把那份复制到本地再改。
+  #   最终落点会全部打进启动日志。
+  source: wbd
+
+  # source: wbd 时读取的文件（相对服务端根目录）
+  wbd-file: "plugins/WarZBombDefuse/shop.yml"
+
+  # source: local 时读取的文件（相对本插件的数据目录）
+  local-file: "shop.yml"
+
+  # 是否要求玩家站在购买区内才能打开商店。
+  #
+  # 购买区在 arenas.yml 里**按阵营**配置（buy-zones），格式与 WarZBombDefuse
+  # 完全一致：world,x,y,z,yaw,pitch,radius —— 最后一位是球体半径。
+  #
+  # 本项只决定「那个场地没有配购买区时怎么办」：
+  #   false（默认）= 没配就不限位置，与 WarZBombDefuse 的注释一致
+  #   true         = 没配就谁都不能买，强制你把购买区量出来
+  #
+  # ⚠ 配了购买区的情况下，无论本项填什么，玩家都必须站在**自己阵营**的
+  #   区内才能买。这是「不能想买就买」的关键：否则玩家可以躲在掩体后面
+  #   边打边换枪，装备选择就失去了代价。
+  buy-zone-required: false
+
+  # 落点兜底槽位：商品没配 give-slot（或配成 -1）时放进这一格。
+  # ⚠ 每一格在放入前都会被清空，所以「落在同一格的商品互相替换」——
+  #   这正是「反复购买不会堆满背包」的实现方式。
+  #
+  # WBD 那份配置里 give-slot 大量是 -1（那边有经济系统，买什么都往空位塞），
+  # 直接照搬会让死斗的背包越买越满。所以默认全部收进第 0 格。
+  # 想让手雷、护甲之类和武器并存，用下面的 slot-overrides 给它们另指一格。
+  fallback-slot: 0
+
+  # 是否给商店发出的物品打上分组标记（一个 PDC 字符串）。
+  #
+  # 开启（默认）：再买同组的商品时会**连带清掉旧的** —— 玩家把旧枪、旧刀挪到
+  #   背包别的格子也照样清得掉，不会攒出一背包枪。
+  # 关闭：物品一个字节都不改，纯粹原样发放。代价是只能覆盖目标槽位，
+  #   玩家把旧物品挪走之后再买，旧的会留在别处。
+  #
+  # 这个开关只决定「要不要在物品上做标记」，不决定「发的是什么」——
+  # 两种设置下发放走的都是配置里存的完整物品数据（give-data），
+  # 模组枪械的枪械 id、配件、弹药、NBT 全在里面，发出去的就是同一件物品。
+  tag-granted-items: true
+
+  # 按商品 id 单独指定落点，优先级高于商品自己的 give-slot。
+  # 键是 shop.yml 里商品的 id（例如 M67Grenade），值是背包槽位（0-35）。
+  # 只影响死斗，不会改动 WBD 的那份配置。
+  slot-overrides:
+    # M67Grenade: 3
+    # Molotov: 4
+    # M18SmokeGrenade: 5
+    # M84Flashbang: 6
+
+  # 按**商品图标的材质**分组分配落点：同材质的商品互相替换，不同材质并存。
+  #
+  # 这是「买手雷不会把枪顶掉」的关键。分组依据用材质而不是商品名，
+  # 因为它在本项目里恰好就是天然分类 —— 枪是 TACZ_MODERN_KINETIC_GUN、
+  # 投掷物是 LRTACTICAL_THROWABLE、配件是 TACZ_ATTACHMENT。
+  #
+  # 没在这里列出的材质会自动分配：按商品数量从多到少依次占用剩余槽位，
+  # 所以几十把枪通常会拿到第 0 格（主手）。**分配结果会打进启动日志**，
+  # 想调整就照着日志里的材质名在这里写一行。
+  material-slots:
+    # TACZ_MODERN_KINETIC_GUN: 0
+    # LRTACTICAL_THROWABLE: 3
+    # POTION: 4
+    # TACZ_ATTACHMENT: 5
+
+integration:
+  # 是否把本模式注册进 WBDAddon。开启后死斗玩家会自动获得：
+  #   - 竞技场饥饿锁定（arena-food）
+  #   - 防第三人称偷看（antithirdcam）
+  #   - JourneyMap 队伍桥接（journeymap-bridge）
+  #   - 击杀播报里的枪械名解析（TacZ GunId → 人类可读）
+  #   - 伤害账本，用于校正 TacZ 环境下的击杀归属
+  # 没装 WBDAddon 时这里自动降级，不影响死斗本身。
+  wbdaddon: true
+
+  # 顶部状态行是否交给 WBDAddon 的 match-status 模块渲染。
+  # 之所以推荐开启：ActionBar 在 Arclight 这类服务端上不能用 Paper 的
+  # Player#sendActionBar，需要走 spigot 的旧接口才生效，交给已经处理过
+  # 这件事的模块去发更稳。
+  # 关掉或没有 WBDAddon 时，本插件用自己的任务发送，功能不受影响。
+  use-wbdaddon-hud: true
+
+  # 从 WarZBombDefuse 的 arenas.yml 导入坐标时读取的文件路径（相对服务端根目录）。
+  wbd-arenas-file: "plugins/WarZBombDefuse/arenas.yml"
+
+  # 场地被本模式使用、同时又出现在 WBD 的启用列表里时是否告警。
+  # 两个模式抢同一个场地会互相干扰（WBD 会推回合、发炸弹、判全灭），
+  # 强烈建议保持开启，并在 WBD 侧把该场地设为 enabled: false。
+  warn-arena-conflict: true
+  # 执行 /tdm enable <场地id> 时，是否自动在 WarZBombDefuse 侧禁用同名场地。
+  #
+  # 实现方式是调用 WBD 自己的命令 /wbd disable <id>，而不是去改它的 arenas.yml：
+  #   - 直接改文件会抹掉 WBD 配置里的大量说明注释
+  #   - 更要命的是改了也没用：WBD 的启用状态在内存里，不 reload 的话
+  #     那个竞技场照样推回合、发炸弹，冲突一点没解决反而更隐蔽
+  # 走它的命令则持久化与运行时状态都由它自己同步。
+  #
+  # 关掉后 /tdm enable 只启用死斗这一侧，冲突需要你自己去 WBD 处理。
+  auto-disable-in-wbd: true
+
+  # 死斗玩家是否也挂「防第三人称」遮挡面。默认关闭。
+  # 那块遮挡面的作用是让第三人称失去偷看价值，而为了做到这一点，
+  # 它就必须待在你自己的视野里 —— 于是低头时会看到黑块，
+  # 贴身缠斗时它会挡住你正要打的那个人。
+  #
+  # 这个代价在节奏慢、要防隔墙偷看的爆破模式里是划算的；但死斗以近距离
+  # 交火为主，它挡住的多半是敌人，弊大于利，所以默认不在死斗里启用。
+  #
+  # 注意：本项只管死斗玩家。爆破模式的判定由 WBDAddon 内置，不受影响；
+  # 想全局关掉防第三人称，请改 WBDAddon 的 modules.antithirdcam.enabled。
+  antithirdcam-in-tdm: false
+
+# 队友名牌。
+#
+# 这一组走的是**原版队伍**机制（前缀 + 名牌可见性），由 WBDAddon 的
+# JourneyMap 桥接写进队伍，所以需要装 WBDAddon 才生效；没装时会自动跳过，
+# 死斗本体不受影响。
+teammate:
+  # 是否给队友的头顶名牌加前缀，并**隐藏敌人的名牌**。
+  #
+  # 这两件事共用这一个开关，是有意的：原版队伍的前缀是「所有人的客户端
+  # 都收得到」的，如果只加前缀而不把名牌设成「仅自己方可见」，
+  # 敌人头上也会顶着一个「[队友]」—— 那比不做还糟。
+  # 拆成两个开关就会出现这种中间状态，所以合成一个。
+  name-tag: true
+
+  # 队友名牌前缀，支持 & 颜色代码。
+  # 上色后不能超过 16 个字符（原版队伍 prefix 的硬上限），超了会被截断。
+  name-tag-prefix: "&a[队友] &f"
+
+# 战后战报。
+#
+# 每场比赛结束后写一份文件，记下比分、胜负、每位玩家的击杀/死亡/连杀/收入，
+# 以及（排位场地上的）段位变化。
+#
+# 为什么值得存：一场打完什么都不留，回头想问「上周那场是谁打的」
+# 「这个人最近是不是在掉分」就完全没有依据。聊天记录会被刷掉，
+# 控制台日志会被轮转，只有落成文件才留得住。
+reports:
+  # 是否生成战报。关掉后不再写任何文件。
+  enabled: true
+
+  # 保存目录，相对本插件的数据目录。
+  folder: "reports"
+
+  # 最多保留多少份，超出后删除最旧的。0 表示不限制。
+  #
+  # 强烈建议保留这个上限：一局一份文件，一个活跃服务器每天能产生几十份，
+  # 不限制的话几年下来就是几万个文件，目录打开都会卡。
+  keep: 500
+
+  # 战报里是否包含段位变化。只有排位场地才有内容。
+  include-ranked: true
+
+  # 战报里是否包含每位玩家的完整名单。
+  # 关掉就只留一行比分摘要，适合只关心「谁赢了」的服务器。
+  include-players: true
