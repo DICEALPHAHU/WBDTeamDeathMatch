@@ -124,7 +124,17 @@
                                      下面的 condition 是保险：万一属性没读到
                                      （例如源码被拷出仓库、插件没生成这个文件），
                                      构建号会退化成 nogit，产物名依然是干净的，
-                                     而不是把 ${...} 原样留在文件名里。 -->
+                                     而不是把 ${...} 原样留在文件名里。
+
+                                     注意：IDE 会对上面两个 ${...} 标红，属于静态误报。它看不见
+                                     Ant 的运行时上下文，而这层配置要到 package 阶段才交给 Ant 执行，
+                                     对编译、打包、产物都没有影响。消红请用 IDE 的点对点忽略：
+                                     Alt+Enter → Ignore unresolved maven property。
+
+                                     千万不要为了消红去 <properties> 里声明这两个属性！
+                                     声明后 Maven 会把 ${...} 插值成空串，而 loadproperties 不覆盖
+                                     已定义属性、isset 对「已定义但为空」仍返回 true。后果有两重：
+                                     产物名里哈希位置变成空段，且 nogit 兜底一并失效。 -->
                                 <loadproperties srcFile="${project.build.outputDirectory}/git.properties"/>
                                 <condition property="artifact.stamp"
                                            value="${git.commit.id.abbrev}"
