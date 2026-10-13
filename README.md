@@ -2,7 +2,7 @@
 
 > WarZBombDefuse 生态下的**团队死斗模式**：无限复活、限时击杀赛，带排位段位、战后战报与战报查询。
 
-一个 Bukkit/Spigot/Paper 插件。它复用 WarZBombDefuse 的**场地坐标格式**、**商店配置格式**与**物品数据格式**，因此你已经在爆破模式里量好的场地、配好的商店可以直接搬过来；同时通过 WBDAddon 的 `WbdAddonApi` 复用饥饿锁定、防第三人称、JourneyMap 队伍桥接等附加能力。
+一个 Bukkit/Spigot/Paper 插件。它复用 WarZBombDefuse 的**场地坐标格式**、**商店配置格式**与**物品数据格式**，因此你已经在爆破模式里量好的场地、配好的商店可以直接搬过来；同时通过 WBDAddon 的 `WbdAddonApi` 复用饥饿锁定、JourneyMap 队伍桥接等附加能力。
 
 ---
 
@@ -33,7 +33,7 @@
 | **战报查询** | `/tdm matchrp <玩家>` 打开箱子界面，点图标在聊天栏展开那一场 | [docs/reports.md](docs/reports.md) |
 | **队友名牌** | 队友头顶带 `[队友]` 前缀，**敌人名牌完全隐藏**（原版队伍机制，不需要发包插件） | [docs/configuration.md](docs/configuration.md) |
 | **HUD** | BossBar 显示时间与比分，ActionBar 显示击杀播报，每人一块独立侧边栏计分板（含段位与金钱） | [docs/configuration.md](docs/configuration.md) |
-| **WBDAddon 集成** | 软依赖：注册本模式后自动获得饥饿锁定、防第三人称、JourneyMap 桥接、武器名解析 | [docs/wbdaddon-api.md](docs/wbdaddon-api.md) |
+| **WBDAddon 集成** | 软依赖：注册本模式后自动获得饥饿锁定、JourneyMap 桥接、武器名解析 | [docs/wbdaddon-api.md](docs/wbdaddon-api.md) |
 
 ---
 
@@ -116,7 +116,7 @@ WBDTeamDeathmatch/
 | 依赖 | 类型 | 说明 |
 |---|---|---|
 | **WarZBombDefuse** | **硬依赖** | 场地坐标、商店配置、物品数据格式全部沿用它的。`plugin.yml` 里声明为 `depend`，缺少时服务端**不会加载本插件** |
-| **WBDAddon** | 软依赖 | 提供 `WbdAddonApi`。没装时插件照常运行，只是失去饥饿锁定、防第三人称、JourneyMap 桥接、队友名牌前缀 |
+| **WBDAddon** | 软依赖 | 提供 `WbdAddonApi`。没装时插件照常运行，只是失去饥饿锁定、JourneyMap 桥接、队友名牌前缀 |
 | **SQLite JDBC** | 服务端自带 | 段位与比赛历史存在 `ranked.db`。Paper/Spigot/Arclight 的 `libraries/` 里都有（本机实测 `org.xerial:sqlite-jdbc:3.42.0.0`），插件不打包它 |
 
 - **服务端**：Arclight / Paper / Spigot 1.20.1（`api-version: '1.20'`）

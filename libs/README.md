@@ -34,7 +34,7 @@ cp target/WBDAddon-*.jar /path/to/WBDTeamDeathmatch/libs/WBDAddon.jar
 
 | 用途 | 最低版本 | 说明 |
 |---|---|---|
-| 注册模式、复用饥饿锁定 / 防第三人称 / JourneyMap 桥接 | 1.1.0 | 提供 `WbdAddonApi`（API `1.1`） |
+| 注册模式、复用饥饿锁定 / JourneyMap 桥接 | 1.1.0 | 提供 `WbdAddonApi`（API `1.1`） |
 | **队友名牌前缀 + 隐藏敌人名牌** | **1.2.0** | `AddonMode.nameTagPrefix()` 与 `hideEnemyNameTags()`（API `1.2`） |
 
 低于 1.2.0 时插件仍能编译运行（那两个方法是接口的默认方法，旧接口里不存在，`WbdAddonModeBridge` 里对它们的重写不会报错，只是不会被调用），但**队友名牌功能会静默失效**。插件启动时会检查 API 版本并打印警告。

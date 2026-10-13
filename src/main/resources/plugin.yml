@@ -22,7 +22,7 @@ depend:
 
 # 软依赖：WBDAddon
 #
-# 它提供 WbdAddonApi。注册本模式后即可复用饥饿锁定、防第三人称、
+# 它提供 WbdAddonApi。注册本模式后即可复用饥饿锁定、
 # JourneyMap 队伍桥接、武器名解析与伤害追踪。没装时本插件照常运行，
 # 只是这些附加功能不可用 —— 启动日志会把不可用的项逐条列出来。
 softdepend:

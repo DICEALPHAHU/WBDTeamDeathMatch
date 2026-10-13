@@ -1,6 +1,6 @@
 # 与 WBDAddon 的集成
 
-WBDAddon 是**软依赖**：没装时本插件照常运行，只是失去饥饿锁定、防第三人称、JourneyMap 桥接、武器名解析、队友名牌前缀这些附加能力。
+WBDAddon 是**软依赖**：没装时本插件照常运行，只是失去饥饿锁定、JourneyMap 桥接、武器名解析、队友名牌前缀这些附加能力。
 
 ---
 
@@ -67,14 +67,11 @@ javap -c -p target/classes/alphahu/tdm/integration/AddonBridge.class | grep -i w
 | `getTeamId(Player)` | 阵营稳定标识（`T` / `CT`），会被拼进原版队伍名 |
 | `getArenaId(Player)` / `getArenaName(Player)` | 所在场地 |
 | `isSameTeam(a, b)` | 默认比较 `getTeamId` |
-| `shouldBlockThirdPerson(Player)` | 是否挂防第三人称遮挡面，**本插件覆盖为默认 false** |
 | `hudLine(Player)` | 自定义 ActionBar 内容；返回 null 则 WBDAddon 跳过该玩家 |
 | `nameTagPrefix(Player)` | **API 1.2 新增**。队友名牌前缀，返回 null 表示不改名牌 |
 | `hideEnemyNameTags()` | **API 1.2 新增**。是否隐藏敌人头顶名牌 |
 
 ### 本插件的选择
-
-`shouldBlockThirdPerson` 覆盖为默认 false（可由 `integration.antithirdcam-in-tdm` 打开）。理由：那块遮挡面必须待在你自己的视野里才能让第三人称失去偷看价值，于是低头时会看到黑块、贴身缠斗时会挡住你正要打的那个人。这个代价在节奏慢的爆破模式里划算；死斗以近距离交火为主，弊大于利。
 
 `nameTagPrefix` / `hideEnemyNameTags` 由 `config.yml` 的 `teammate.name-tag` 控制，**两项共用一个开关**。不拆开是因为：原版队伍前缀是"所有人的客户端都收得到"的，只加前缀而不管可见性，敌人头上也会顶着一个 `[队友]`——比不做还糟。
 
@@ -113,7 +110,7 @@ team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.FOR_OWN_TEAM);
 
 | 用途 | 需要 |
 |---|---|
-| 注册模式，复用饥饿锁定 / 防第三人称 / JourneyMap 桥接 | WBDAddon **1.1.0**（API `1.1`） |
+| 注册模式，复用饥饿锁定 / JourneyMap 桥接 | WBDAddon **1.1.0**（API `1.1`） |
 | 队友名牌前缀 + 隐藏敌人名牌 | WBDAddon **1.2.0**（API `1.2`） |
 
 装 1.1.0 的 WBDAddon 配新版本插件**不会报任何错**，这两项只是**静默失效**——玩家看到的是一堆头顶没有标记的敌人，然后来问你插件是不是坏了。

@@ -39,7 +39,7 @@ import java.util.Properties;
  * 塞不进一个没有回合的玩法）。
  *
  * <p>两边唯一的交集是通过 WBDAddon 的 {@code WbdAddonApi}：把死斗玩家注册成
- * 一个「模式」，附加组件便自动把饥饿锁定、防第三人称、JourneyMap 桥接
+ * 一个「模式」，附加组件便自动把饥饿锁定、JourneyMap 桥接
  * 这些功能一并覆盖到死斗玩家身上，不必在死斗里重写一遍。
  *
  * @author AlphaHu
@@ -142,7 +142,6 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
         if (addon == null || !addon.isEnabled()) {
             getLogger().warning("依赖检查：未检测到可用的 WBDAddon，以下附加功能不可用 ——");
             getLogger().warning("    · 竞技场饥饿锁定（arena-food）");
-            getLogger().warning("    · 防第三人称偷看（antithirdcam）");
             getLogger().warning("    · JourneyMap 队伍桥接");
             getLogger().warning("    · 击杀播报的武器名解析、回合伤害统计");
             getLogger().warning("    · 顶部状态行交给 WBDAddon 代渲染");
@@ -477,7 +476,7 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
                 "&b  构建：&e" + buildStamp(),
                 "&b  作者：&dAlphaHu",
                 "&b  团队死斗：无限复活 / 限时击杀赛",
-                "&b  可接入 WBDAddon 复用饥饿锁定、防第三人称与 JourneyMap 桥接",
+                "&b  可接入 WBDAddon 复用饥饿锁定与 JourneyMap 桥接",
                 "&b  输入 &e/tdm help &b查看用法",
                 "&b========================================"
         };

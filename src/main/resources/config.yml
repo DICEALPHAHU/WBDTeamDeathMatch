@@ -339,7 +339,6 @@ shop:
 integration:
   # 是否把本模式注册进 WBDAddon。开启后死斗玩家会自动获得：
   #   - 竞技场饥饿锁定（arena-food）
-  #   - 防第三人称偷看（antithirdcam）
   #   - JourneyMap 队伍桥接（journeymap-bridge）
   #   - 击杀播报里的枪械名解析（TacZ GunId → 人类可读）
   #   - 伤害账本，用于校正 TacZ 环境下的击杀归属
@@ -370,18 +369,6 @@ integration:
   #
   # 关掉后 /tdm enable 只启用死斗这一侧，冲突需要你自己去 WBD 处理。
   auto-disable-in-wbd: true
-
-  # 死斗玩家是否也挂「防第三人称」遮挡面。默认关闭。
-  # 那块遮挡面的作用是让第三人称失去偷看价值，而为了做到这一点，
-  # 它就必须待在你自己的视野里 —— 于是低头时会看到黑块，
-  # 贴身缠斗时它会挡住你正要打的那个人。
-  #
-  # 这个代价在节奏慢、要防隔墙偷看的爆破模式里是划算的；但死斗以近距离
-  # 交火为主，它挡住的多半是敌人，弊大于利，所以默认不在死斗里启用。
-  #
-  # 注意：本项只管死斗玩家。爆破模式的判定由 WBDAddon 内置，不受影响；
-  # 想全局关掉防第三人称，请改 WBDAddon 的 modules.antithirdcam.enabled。
-  antithirdcam-in-tdm: false
 
 # 队友名牌。
 #

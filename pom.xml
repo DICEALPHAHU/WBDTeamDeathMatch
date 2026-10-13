@@ -39,7 +39,7 @@
 
         <!-- WBDAddon 本地依赖，需将构建好的 WBDAddon.jar 放入 libs/ 目录。
              本插件只用到它的 alphahu.wbdaddon.api 包（AddonMode / WbdAddonApi）——
-             靠这两个接口把死斗玩家喂给 WBDAddon 的饥饿锁定、防第三人称、
+             靠这两个接口把死斗玩家喂给 WBDAddon 的饥饿锁定、
              JourneyMap 桥接等功能，而不必把 WBDAddon 的类加载器钉死在这里。
              运行期没装 WBDAddon 时插件仍可独立运行，只是少了那些附加功能。 -->
         <dependency>

@@ -23,7 +23,7 @@ WarZBombDefuse 生态下的**团队死斗**模式：无限复活、限时击杀�
 
 所以本插件的做法是：**另起一套比赛循环，与爆破模式平行**。两边唯一的交集是
 WBDAddon 的 `WbdAddonApi` —— 把死斗玩家注册成一个「模式」，WBDAddon 的
-饥饿锁定、防第三人称、JourneyMap 队伍桥接、伤害账本、枪械名解析便会自动覆盖到
+饥饿锁定、JourneyMap 队伍桥接、伤害账本、枪械名解析便会自动覆盖到
 死斗玩家身上。
 
 ### ⚠️ 一个必须遵守的约定
@@ -66,10 +66,9 @@ WBDAddon 的 `WbdAddonApi` —— 把死斗玩家注册成一个「模式」，W
 | --- | --- | --- |
 | **Paper / Spigot / Arclight 1.20.1+** | 必需 | 按 Paper API 编译，走 spigot 兼容接口发送 HUD |
 | **Java 17** | 必需 | |
-| **WBDAddon 1.1.0+** | 可选 | 提供 `WbdAddonApi`。没装时死斗照常运行，只是失去饥饿锁定、防第三人称、JourneyMap 桥接、枪械名解析等附加功能 |
+| **WBDAddon 1.1.0+** | 可选 | 提供 `WbdAddonApi`。没装时死斗照常运行，只是失去饥饿锁定、JourneyMap 桥接、枪械名解析等附加功能 |
 | **WarZBombDefuse** | 可选 | 死斗不依赖它。装了才能用 `/tdm import` 从它的 `arenas.yml` 导入已量好的坐标 |
 | **TacZ + TacZSpigotBridge** | 可选 | 有 TacZ 枪械时，击杀播报能显示 `P320` 而不是 `tacz:p320` |
-| **ProtocolLib** | 可选 | WBDAddon 的防第三人称模块需要它 |
 
 ## 安装
 
@@ -397,21 +396,6 @@ loadout:
 2. 于是死斗玩家自动获得饥饿锁定、JourneyMap 队伍桥接
 3. 击杀播报里的武器名走 WBDAddon 的解析（能认 TacZ 枪械）
 4. 击杀归属使用 WBDAddon 的伤害账本
-
-### 为什么死斗默认不挂「防第三人称」遮挡面
-
-WBDAddon 的 `antithirdcam` 模块靠一块**只对本人可见的巨大黑平面**来让第三人称失去偷看价值。
-问题在于：要让第三人称看不见，这块面就必须**待在你自己的视野里**。于是它有两个固然后果 ——
-
-- 低头时会看到一块黑块（面被压在玩家下方十几格，平视在视野外，低头就进来了）
-- **贴身缠斗时，它挡住的是你正要打的那个人**
-
-这个代价在节奏慢、重点在防隔墙偷看的爆破模式里是划算的；但死斗以近距离交火为主，
-挡住的往往是敌人，弊大于利。所以 `integration.antithirdcam-in-tdm` 默认是 `false`。
-
-这**不影响爆破模式** —— 那边的判定由 WBDAddon 内置的 `BombDefuseMode` 负责，
-`AddonMode.shouldBlockThirdPerson` 的默认实现照常生效。
-想全局关掉防第三人称，改 WBDAddon 的 `modules.antithirdcam.enabled` 即可。
 
 顶部状态行（ActionBar）默认交给 WBDAddon 的 `match-status` 模块渲染
 （`integration.use-wbdaddon-hud: true`）。原因是在 Arclight 这类服务端上

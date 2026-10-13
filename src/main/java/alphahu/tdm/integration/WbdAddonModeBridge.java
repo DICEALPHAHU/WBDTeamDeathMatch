@@ -308,28 +308,6 @@ public final class WbdAddonModeBridge implements ModeBridge, AddonMode {
     }
 
     /**
-     * 死斗玩家是否挂「防第三人称」遮挡面。
-     *
-     * <p>这里<b>覆盖</b>掉 {@link AddonMode} 的默认实现（默认对所有模式生效），
-     * 默认返回 false。
-     *
-     * <p>理由是那个遮挡面的性质决定的：它是一块挂在玩家身边、只对本人可见的
-     * 巨大黑平面。要让第三人称失去偷看价值，它就必须待在你自己的视野里 ——
-     * 于是低头时会看到黑块，贴身缠斗时它挡住的是你正要打的那个人。
-     *
-     * <p>这个代价在节奏慢、需要防隔墙偷看的爆破模式里是划算的；而死斗以
-     * 近距离交火为主，它挡住的多半是敌人，弊大于利。
-     * 需要的话可以用 {@code integration.antithirdcam-in-tdm} 打开。
-     */
-    @Override
-    public boolean shouldBlockThirdPerson(Player player) {
-        if (!plugin.getSettings().antithirdcamInTdm) {
-            return false;
-        }
-        return isPlaying(player) && isAlive(player);
-    }
-
-    /**
      * 队友头顶名牌的前缀。
      *
      * <p>前缀由 WBDAddon 写进原版队伍，而队伍是按「模式 + 阵营」划分的，

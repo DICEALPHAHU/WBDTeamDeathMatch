@@ -74,7 +74,7 @@ public final class AddonBridge {
         Plugin wbdAddon = Bukkit.getPluginManager().getPlugin("WBDAddon");
         if (wbdAddon == null || !wbdAddon.isEnabled()) {
             plugin.getLogger().info("未检测到可用的 WBDAddon，"
-                    + "饥饿锁定 / 防第三人称 / JourneyMap 桥接等附加功能不可用，"
+                    + "饥饿锁定 / JourneyMap 桥接等附加功能不可用，"
                     + "死斗本身不受影响。");
             return;
         }
@@ -85,7 +85,7 @@ public final class AddonBridge {
         if (!hasApiClass(wbdAddon)) {
             plugin.getLogger().warning("检测到 WBDAddon，但它不提供 " + API_CLASS + "。");
             plugin.getLogger().warning("这通常是版本过旧（需要 1.1.0 或更高）。"
-                    + "请更新 WBDAddon 以启用饥饿锁定、防第三人称、JourneyMap 桥接等附加功能。");
+                    + "请更新 WBDAddon 以启用饥饿锁定、JourneyMap 桥接等附加功能。");
             return;
         }
 
@@ -154,7 +154,7 @@ public final class AddonBridge {
 
     private void reportConnected() {
         plugin.getLogger().info("已接入 WBDAddon，"
-                + "饥饿锁定 / 防第三人称 / JourneyMap 桥接等附加功能可用。");
+                + "饥饿锁定 / JourneyMap 桥接等附加功能可用。");
         plugin.getLogger().info("WBDAddon 提供的伤害账本："
                 + (damageLedger() != null ? "可用" : "不可用（kill-reports 模块未启用）"));
         plugin.getLogger().info("顶部状态行："

@@ -142,10 +142,7 @@ loadout:
 | `use-wbdaddon-hud` | `true` | 顶部状态行是否交给 WBDAddon 渲染 |
 | `warn-arena-conflict` | `true` | 启动时检查 WBD 侧是否启用了同一个场地 |
 | `auto-disable-in-wbd` | `true` | `/tdm enable` 时自动在 WBD 侧禁用同名场地 |
-| `antithirdcam-in-tdm` | `false` | 死斗玩家是否也挂防第三人称遮挡面 |
 | `wbd-arenas-file` | `plugins/WarZBombDefuse/arenas.yml` | WBD 的场地文件路径 |
-
-> `antithirdcam-in-tdm` 默认关闭：那块遮挡面必须待在你自己的视野里才能让第三人称失去偷看价值，于是低头时会看到黑块、贴身缠斗时会挡住你正要打的人。这个代价在节奏慢、要防隔墙偷看的爆破模式里划算；死斗以近距离交火为主，弊大于利。
 
 ### `teammate` —— 队友名牌
 

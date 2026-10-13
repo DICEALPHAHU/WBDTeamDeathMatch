@@ -126,7 +126,6 @@ public final class TdmSettings {
     public final boolean useWbdAddonHud;
     public final boolean warnArenaConflict;
     public final boolean autoDisableInWbd;
-    public final boolean antithirdcamInTdm;
     public final String wbdArenasFile;
 
     private TdmSettings(FileConfiguration c) {
@@ -188,7 +187,6 @@ public final class TdmSettings {
         this.useWbdAddonHud = c.getBoolean("integration.use-wbdaddon-hud", true);
         this.warnArenaConflict = c.getBoolean("integration.warn-arena-conflict", true);
         this.autoDisableInWbd = c.getBoolean("integration.auto-disable-in-wbd", true);
-        this.antithirdcamInTdm = c.getBoolean("integration.antithirdcam-in-tdm", false);
         this.wbdArenasFile = c.getString("integration.wbd-arenas-file",
                 "plugins/WarZBombDefuse/arenas.yml");
 
