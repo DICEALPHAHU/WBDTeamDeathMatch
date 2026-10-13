@@ -194,7 +194,11 @@ mvn -B clean package
 
 ## 许可
 
-见 [LICENSE](LICENSE)。
+本项目以 **GPL-3.0** 开源，与同生态的 WBDAddon 保持一致。完整条款见 [LICENSE](LICENSE)。
+
+Copyright (C) 2026 AlphaHu
+
+GPL-3.0 是 copyleft 协议：基于本项目的衍生作品必须以相同条款开源分发，不能改为闭源。若只是想在自己的服务器上使用本插件，不构成分发，不受此约束。
 
 ---
 
