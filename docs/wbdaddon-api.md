@@ -111,7 +111,7 @@ team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.FOR_OWN_TEAM);
 | 用途 | 需要 |
 |---|---|
 | 注册模式，复用饥饿锁定 / JourneyMap 桥接 | WBDAddon **1.1.0**（API `1.1`） |
-| 队友名牌前缀 + 隐藏敌人名牌 | WBDAddon **1.2.0**（API `1.2`） |
+| 队友名牌前缀 + 隐藏敌人名牌 | WBDAddon **1.2.1**（API `1.2`） |
 
 装 1.1.0 的 WBDAddon 配新版本插件**不会报任何错**，这两项只是**静默失效**——玩家看到的是一堆头顶没有标记的敌人，然后来问你插件是不是坏了。
 

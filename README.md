@@ -122,7 +122,7 @@ WBDTeamDeathmatch/
 - **服务端**：Arclight / Paper / Spigot 1.20.1（`api-version: '1.20'`）
 - **Java**：17
 - **实测环境**：Arclight 1.20.1（Forge 47.4.18 + Bukkit 混合端）
-- **WBDAddon 版本**：队友名牌功能需要 **1.2.0+**（API `1.2`），低于此版本该功能会**静默失效**，插件会在控制台给出警告
+- **WBDAddon 版本**：队友名牌功能需要 **1.2.1+**（API `1.2`），低于此版本该功能会**静默失效**，插件会在控制台给出警告
 
 ---
 
@@ -172,7 +172,7 @@ WBDTeamDeathmatch/
 mvn -B clean package
 ```
 
-产物：`target/WBDTeamDeathmatch-<版本>-<git哈希>-<时间戳>.jar`
+产物：`target/WBDTDM-<版本>-<git哈希>-<时间戳>.jar`
 
 ---
 
@@ -185,7 +185,7 @@ mvn -B clean package
 | 商店里全是武器 / 装备全挤在第一格 | `shop.source` 指向了未调过落点的配置；或读到的是 WBD 原版（`give-slot` 多为 `-1`） |
 | 发出来的枪不是那把枪 | 商品缺少 `give-data`，只能按材质造空壳。启动日志的"发放数据审计"会点名 |
 | 段位永远偏低 | 结算晚于 `resetForNewMatch()`，全员按 0 击杀结算 |
-| 敌人头上还显示名字 | WBDAddon 版本低于 1.2.0，队友名牌功能静默失效 |
+| 敌人头上还显示名字 | WBDAddon 版本低于 1.2.1，队友名牌功能静默失效 |
 | 商店突然打不开 | `buy-zones` 球心坐标不对（落在地底/半空），玩家进不去 |
 
 更多见 [docs/troubleshooting.md](docs/troubleshooting.md)。

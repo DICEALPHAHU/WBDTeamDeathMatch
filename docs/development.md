@@ -41,7 +41,7 @@ mvn -B clean package
 产物：
 
 ```
-target/WBDTeamDeathmatch-1.0.0-a4cbeed-20260926-1745.jar
+target/WBDTDM-1.2.1-a4cbeed-20260926-1745.jar
                 └ 版本号    └ git短哈希  └ 构建时间戳（UTC）
 ```
 
@@ -124,7 +124,7 @@ git add --renormalize .
 
 ```
 依赖检查：WarZBombDefuse 1.2.2 已就绪。
-依赖检查：WBDAddon 1.2.0 已就绪，附加功能已启用。
+依赖检查：WBDAddon 1.2.1 已就绪，附加功能已启用。
 段位数据库已就绪：plugins/WBDTeamDeathmatch/ranked.db
 段位系统已就绪：载入 12 份档案，段位表 8 段，击杀分 6×最多 10，入场费 0~75，赛季 60 天。
 商店已加载：50 件公共商品，阵营专属 2 组，共 3 页。

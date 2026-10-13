@@ -5,18 +5,18 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>alphahu</groupId>
-    <artifactId>WBDTeamDeathmatch</artifactId>
-    <version>1.0.0</version>
+    <artifactId>WBDTDM</artifactId>
+    <version>1.2.1</version>
     <packaging>jar</packaging>
 
-    <name>WBDTeamDeathmatch</name>
+    <name>WBDTDM</name>
     <description>WarZBombDefuse 生态下的团队死斗模式：无限复活、限时击杀赛，并通过 WbdAddonApi 复用 WBDAddon 的附加功能。</description>
 
     <properties>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 构建号 = git 提交短哈希 + 构建时间戳（UTC），产物名形如
-             WBDTeamDeathmatch-1.0.0-a4cbeed-20260926-1745.jar：
+             WBDTDM-1.2.1-a4cbeed-20260926-1745.jar：
              哈希能一眼对应到是哪份代码，时间戳用于区分同一提交的多次构建 -->
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     </properties>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>alphahu</groupId>
             <artifactId>WBDAddon</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.1</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/libs/WBDAddon.jar</systemPath>
         </dependency>

@@ -72,7 +72,7 @@ WBDAddon 的 `WbdAddonApi` —— 把死斗玩家注册成一个「模式」，W
 
 ## 安装
 
-1. 把 `WBDTeamDeathmatch-<版本>-<git短哈希>-<时间戳>.jar` 放进服务端 `plugins`
+1. 把 `WBDTDM-<版本>-<git短哈希>-<时间戳>.jar` 放进服务端 `plugins`
 2. （推荐）同时安装 `WBDAddon-1.1.0+`，以复用附加功能
 3. 重启服务器
 4. 编辑 `plugins/WBDTeamDeathmatch/arenas.yml`，配上出生点与边界
@@ -436,7 +436,7 @@ java.lang.NoClassDefFoundError: alphahu/wbdaddon/api/AddonMode
 
 ```powershell
 # 期望只列出 WbdAddonModeBridge
-javap -v -p -cp target/WBDTeamDeathmatch-*.jar alphahu.tdm.integration.AddonBridge |
+javap -v -p -cp target/WBDTDM-*.jar alphahu.tdm.integration.AddonBridge |
     Select-String "= Class.*wbdaddon"
 ```
 
@@ -448,12 +448,12 @@ javap -v -p -cp target/WBDTeamDeathmatch-*.jar alphahu.tdm.integration.AddonBrid
 # 1. 先构建 WBDAddon
 cd ../WBDAddon && mvn clean package
 # 2. 把产物拷成 TDM 项目的依赖
-cp target/WBDAddon-1.1.0-*.jar ../WBDTeamDeathmatch/libs/WBDAddon.jar
+cp target/WBDAddon-1.2.1-*.jar ../WBDTeamDeathmatch/libs/WBDAddon.jar
 # 3. 再构建本插件
 cd ../WBDTeamDeathmatch && mvn clean package
 ```
 
-产物在 `target/WBDTeamDeathmatch-<版本>-<git短哈希>-<时间戳>.jar`。
+产物在 `target/WBDTDM-<版本>-<git短哈希>-<时间戳>.jar`。
 
 ## 已知限制
 
