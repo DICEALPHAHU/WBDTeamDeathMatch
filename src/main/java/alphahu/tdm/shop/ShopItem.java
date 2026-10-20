@@ -8,7 +8,7 @@ import java.util.List;
  * 商店里的一件商品。
  *
  * <p>字段与 WarZBombDefuse 的商店格式对齐，方便直接复用服主已经配好的
- * {@code shop.yml}。唯一刻意不支持的是 {@code price}：死斗不比经济，全部免费。
+ * {@code shop.yml}。{@code price} 同样支持：死斗按价格收费，钱来自击杀与连杀。
  *
  * @param id              标识，用于日志与槽位覆盖配置
  * @param page            所在页码（从 1 开始）

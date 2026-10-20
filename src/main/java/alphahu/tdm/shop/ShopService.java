@@ -43,14 +43,18 @@ import java.util.logging.Logger;
  *
  * <p>物品数据用 {@link BukkitObjectInputStream} 还原，这是 WBD 写入时用的同一套机制。
  *
- * <h2>免费与「购买覆盖」</h2>
- * 死斗不比经济，{@code price} 被完全忽略，点一下直接换上。
+ * <h2>价格与「购买覆盖」</h2>
+ * 商品按 {@code price} 收费，{@code economy.enabled: false} 时才回到全免费。
+ * 钱来自击杀与连杀 —— 打得好的队伍先买得起好枪，这条正反馈是模式的一部分。
  *
- * <p>每件商品都有一个落点槽位：{@code give-slot >= 0} 用它，否则用
- * {@code shop.fallback-slot}（默认 0）。**放入前先清空该槽位**，所以反复购买
- * 只会互相替换，不会堆成一背包武器。想让几件装备并存，给它们配不同的
- * {@code give-slot} 即可 —— 也可以在 config.yml 里用 {@code slot-overrides}
- * 单独指定，不必改动 WBD 的那份配置。
+ * <p>落点槽位的优先级：{@code shop.slot-overrides}（按商品 id）→ 商品的
+ * {@code give-slot} → 按图标材质分组的 {@code material-slots} →
+ * {@code shop.fallback-slot}（默认 0）。
+ *
+ * <p>发出的每件物品都带一个**以落点为键**的分组标记；购买时先扫一遍背包
+ * （含护甲槽与副手），把同组的旧物品清掉再放新的，所以落点相同的商品只会互相替换，
+ * 不会堆成一背包武器。想让几件装备并存，给它们配不同的 {@code give-slot} 即可 ——
+ * 也可以在 config.yml 里用 {@code slot-overrides} 单独指定，不必改动 WBD 的那份配置。
  *
  * @author AlphaHu
  */

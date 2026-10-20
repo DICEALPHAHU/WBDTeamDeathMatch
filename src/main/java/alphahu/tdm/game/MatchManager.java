@@ -115,12 +115,6 @@ public final class MatchManager {
             }
         }
 
-        if (enabled > 1) {
-            plugin.getLogger().info("检测到多个可用场地，侧边栏记分板已停用"
-                    + "（它注册在主计分板上，一次只能显示一场比赛）。"
-                    + "比分与剩余时间仍会显示在顶部状态行。");
-        }
-
         if (plugin.getSettings().warnArenaConflict) {
             warnArenaConflicts();
         }
