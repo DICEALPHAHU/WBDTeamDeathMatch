@@ -414,6 +414,10 @@ public final class MatchHud {
      * {@code wbd_*} 队伍，JourneyMap 于是读不到队友关系 —— 队友可见、敌军隐藏全部
      * 失效，而且**不会报任何错**。把队伍复制一份过来就恢复了。
      *
+     * <p>镜像的范围不只是名字、前后缀与成员，还包括**队伍选项**。这一条尤其容易漏：
+     * {@code NAME_TAG_VISIBILITY} 正是「隐藏敌人名牌」的全部实现，选项跟着计分板
+     * 下发，不镜像就等于把那项功能悄悄关掉了（见下面 {@code Team.Option} 那段）。
+     *
      * <p>只处理「主计分板上有、或曾经有」的队伍；侧边栏自己的行锚点队伍要跳过，
      * 那些只是用来挂文字的。
      */
@@ -434,6 +438,26 @@ public final class MatchHud {
             }
             if (!source.getSuffix().equals(target.getSuffix())) {
                 target.setSuffix(source.getSuffix());
+            }
+            // 队伍选项必须一起搬过来 —— 漏了它，敌人名牌就会重新露出来。
+            //
+            // 这里踩过一次，症状很隐蔽：名字、成员都镜像了，唯独没镜像
+            // NAME_TAG_VISIBILITY。它在主计分板上是 FOR_OWN_TEAM（敌人看不见），
+            // 但**队伍选项是跟着玩家当前所用的计分板下发的**：玩家一切到我们给的
+            // 板子，客户端收到的队伍就退回默认的 ALWAYS，敌人头顶的名字照样穿墙可见，
+            // 而且不报任何错 —— 表现成「隐藏敌人名牌这个功能根本没生效」。
+            //
+            // 这里把所有选项通用地拷一遍，而不是只补 NAME_TAG_VISIBILITY：
+            // 原版以后新增选项时，漏掉同样不会报错，只是行为悄悄不对。
+            for (Team.Option option : Team.Option.values()) {
+                Team.OptionStatus wanted = source.getOption(option);
+                if (target.getOption(option) != wanted) {
+                    target.setOption(option, wanted);
+                }
+            }
+            // canSeeFriendlyInvisibles 不是 Option 枚举的一项，得单独同步
+            if (target.canSeeFriendlyInvisibles() != source.canSeeFriendlyInvisibles()) {
+                target.setCanSeeFriendlyInvisibles(source.canSeeFriendlyInvisibles());
             }
             for (String entry : source.getEntries()) {
                 if (!target.hasEntry(entry)) {
