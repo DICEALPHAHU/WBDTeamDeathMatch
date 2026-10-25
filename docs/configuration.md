@@ -190,25 +190,45 @@ teammate:
 ```yaml
 teammate:
   uniform:
-    enabled: false        # 默认关闭，原因见下
-    slot: HELMET          # HELMET / CHESTPLATE / LEGGINGS / BOOTS
+    enabled: true            # 总开关
+    follow-wbdaddon: true    # WBDAddon 那边开着就让位给它
+    slot: HELMET             # HELMET / CHESTPLATE / LEGGINGS / BOOTS
     t-color: "#C0392B"
     ct-color: "#2E86DE"
 ```
 
 纯原版物品，**不依赖任何插件**：给参赛玩家戴一件队伍配色的皮革装备，一眼分辨敌我。与上面的 `skin` 互不影响，可以只开一个，也可以都开。
 
-> ⚠ **装了新版 WBDAddon 就保持关闭。** WBDAddon 1.2.1 起自带「队伍护甲」模块（`team-armor`），功能与本项重叠。两边同时开会在**同一个盔甲槽**上互相覆盖：WBDAddon 发现头盔不是它的就覆盖，本插件发现不是自己的就补回来，每秒一轮 —— 结果是玩家背包里**无限多出皮革头盔**。两者留一个即可，推荐用 WBDAddon 的那套。
+**本插件和 WBDAddon 都能干这件事，只能有一个人干。** WBDAddon 1.2.1 起自带「队伍护甲」模块（`team-armor`），两边同时强制同一个盔甲槽会互相覆盖 —— 曾经就是因此让玩家背包里无限多出皮革头盔。所以这里做了自动仲裁：
+
+| 情况 | 谁负责 |
+|---|---|
+| WBDAddon 没装 | **本插件** |
+| WBDAddon 装了，`config.yml` 里 `modules.team-armor.enabled: false` | **本插件** |
+| WBDAddon 装了，配置里没有这个键（旧版本没有该模块） | **本插件** |
+| WBDAddon 装了，且 `modules.team-armor.enabled: true` | **WBDAddon**，本插件完全不碰盔甲槽 |
+
+判定读的是 `plugins/WBDAddon/config.yml`，因为 WBDAddon 的对外 API 只暴露模式注册与玩家状态，不暴露「某个模块开没开」；读对方 data 目录是本插件已有的做法（读 WarZBombDefuse 的 `arenas.yml` 用的就是同一招）。读取失败一律按「没开」处理 —— 最坏情况是两套都不套，而不是互相覆盖。
+
+结论会打印在启动日志和 `/tdm reload` 的最后一行：
+
+```
+队伍队服：检测到 WBDAddon 已开启队伍护甲（modules.team-armor.enabled），本插件让位，不再套自己的队服。
+队伍队服：由本插件负责（槽位 HELMET，T #C0392B / CT #2E86DE）。
+```
+
+`follow-wbdaddon: false` 可以关掉这套仲裁（不管 WBDAddon 开没开都套自己的），但只有在确定 WBDAddon 的 `team-armor` 已关闭时才该这么设。
 
 **队服不带护甲值。** 原版没法直接改物品的护甲值，但 `generic.armor` 是个普通属性，皮革装备自带的护甲同样是一条属性修饰 —— 所以给它挂一条等值的**负数**修饰，穿上以后净加成正好为 0。同时用 `HIDE_ATTRIBUTES` 遮住 tooltip，否则玩家会看到一行「护甲 -1」。
 
 代价值得说清楚：它**占住一个盔甲槽**，那个槽位就不能再穿更好的甲。所以默认用 `HELMET`（四个槽位里护甲值最低的一个）。四个槽位的皮革护甲值分别是 1 / 3 / 2 / 1，都会按上面的方式抵成 0。
 
-**只填空槽位，绝不抢占。** 槽位里已经有任何物品（玩家自己买的头盔、或别的插件发的队服）时，本项一律让位 —— 这是为了避免上面那种互相覆盖导致的复制。点击盔甲槽取下队服仍会被拦截；散落在背包里的队服副本会被清掉，避免「取下来 → 补发」变成复制。
+**只填空槽位，绝不抢占。** 槽位里已经有任何物品（玩家自己买的头盔、或别的插件发的队服）时，本项一律让位 —— 这是第二道保险：即使仲裁判断失误，也不会再出现互相覆盖导致的复制。点击盔甲槽取下队服仍会被拦截；散落在背包里的队服副本会被清掉，避免「取下来 → 补发」变成复制。
 
 | 项 | 默认 | 说明 |
 |---|---|---|
-| `enabled` | `false` | 总开关 |
+| `enabled` | `true` | 总开关 |
+| `follow-wbdaddon` | `true` | WBDAddon 开着队伍护甲时是否让位 |
 | `slot` | `HELMET` | 队服占用哪个盔甲槽 |
 | `t-color` / `ct-color` | `#C0392B` / `#2E86DE` | 支持 `#RRGGBB` 或染料名（`RED` / `BLUE` …） |
 

@@ -399,6 +399,12 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
         addonBridge.unregister();
         addonBridge.register();
 
+        // 重载后重新仲裁一次「队服由谁负责」：服主可能刚改了
+        // teammate.uniform.follow-wbdaddon，或刚在 WBDAddon 那边开关了队伍护甲
+        if (uniform != null) {
+            uniform.refresh();
+        }
+
         getLogger().info("配置、竞技场与商店已重载。");
     }
 

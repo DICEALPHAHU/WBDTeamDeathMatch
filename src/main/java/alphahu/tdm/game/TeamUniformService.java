@@ -3,11 +3,13 @@ package alphahu.tdm.game;
 import alphahu.tdm.WBDTeamDeathmatch;
 import alphahu.tdm.config.TdmSettings;
 import alphahu.tdm.util.Text;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,6 +22,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.io.File;
 import java.util.UUID;
 
 /**
@@ -71,10 +74,80 @@ public final class TeamUniformService implements Listener {
     private final NamespacedKey marker;
     private final Slot slot;
 
+    /** WBDAddon 是否已经开着队伍护甲（决定本插件要不要让位）。 */
+    private boolean wbdAddonOwns;
+
     public TeamUniformService(WBDTeamDeathmatch plugin) {
         this.plugin = plugin;
         this.marker = new NamespacedKey(plugin, "team_uniform");
         this.slot = parseSlot(plugin.getSettings().uniformSlot);
+        refresh();
+    }
+
+    /**
+     * 重新判定「这套队服现在该不该由本插件负责」，并把结论打进日志。
+     *
+     * <p>启动与 {@code /tdm reload} 时各跑一次。之所以要看对方的**配置文件**
+     * 而不是问它的 API：WBDAddon 的对外 API 只暴露模式注册与玩家状态，
+     * 不暴露「某个模块开没开」，而读它的 data 目录是现成的做法
+     * （本插件读 WarZBombDefuse 的 arenas.yml 用的就是同一招）。
+     *
+     * <p>判定规则：
+     * <ol>
+     *   <li>WBDAddon 没装 → 本插件负责</li>
+     *   <li>装了，但它的 config.yml 里 {@code modules.team-armor.enabled} 是 false
+     *       → 本插件负责</li>
+     *   <li>装了且没写这个键（配置文件不存在 / 旧版本没有该模块）→ 本插件负责</li>
+     *   <li>装了且明确开启 → 让位，用 WBDAddon 的</li>
+     * </ol>
+     */
+    public void refresh() {
+        TdmSettings settings = plugin.getSettings();
+        this.wbdAddonOwns = settings.uniformFollowWbdAddon && wbdAddonTeamArmorEnabled();
+
+        if (!settings.uniformEnabled) {
+            return;
+        }
+        if (wbdAddonOwns) {
+            plugin.getLogger().info("队伍队服：检测到 WBDAddon 已开启队伍护甲"
+                    + "（modules.team-armor.enabled），本插件让位，不再套自己的队服。");
+        } else {
+            plugin.getLogger().info("队伍队服：由本插件负责（槽位 " + slot.name()
+                    + "，T " + settings.uniformTColor + " / CT " + settings.uniformCtColor + "）。");
+        }
+    }
+
+    /** 本插件的队服此刻是否应当生效。 */
+    private boolean active() {
+        return plugin.getSettings().uniformEnabled && !wbdAddonOwns;
+    }
+
+    /**
+     * WBDAddon 的队伍护甲模块是否处于开启状态。
+     *
+     * <p>读的是 {@code plugins/WBDAddon/config.yml} 的
+     * {@code modules.team-armor.enabled}。读取失败一律按「没开」处理 ——
+     * 那样最多是两套队服都不套（玩家没有队服），而不是两套互相覆盖。
+     */
+    private boolean wbdAddonTeamArmorEnabled() {
+        var addon = Bukkit.getPluginManager().getPlugin("WBDAddon");
+        if (addon == null) {
+            return false;
+        }
+        File config = new File(addon.getDataFolder(), "config.yml");
+        if (!config.isFile()) {
+            // 插件在、配置还没生成：它下次启动会用自带默认值（开启），
+            // 所以这里按「开启」处理，免得两边同时上手
+            return true;
+        }
+        try {
+            YamlConfiguration yaml = YamlConfiguration.loadConfiguration(config);
+            return yaml.getBoolean("modules.team-armor.enabled", false);
+        } catch (RuntimeException e) {
+            plugin.getLogger().warning("读取 WBDAddon 的 config.yml 失败，"
+                    + "队伍护甲按「未开启」处理：" + e.getMessage());
+            return false;
+        }
     }
 
     /** 把配置里的槽位名解析成枚举；写错时退回头盔并告警。 */
@@ -96,7 +169,7 @@ public final class TeamUniformService implements Listener {
      * 盔甲槽一起清掉，先穿后清等于白穿。
      */
     public void apply(Player player, TdmTeam team) {
-        if (!plugin.getSettings().uniformEnabled) {
+        if (!active()) {
             return;
         }
         PlayerInventory inventory = player.getInventory();
@@ -123,7 +196,7 @@ public final class TeamUniformService implements Listener {
      * 想让队服真正生效，就别和别的插件同时开同一个槽位的队服。
      */
     public void assertUniform(Player player, TdmTeam team) {
-        if (!plugin.getSettings().uniformEnabled) {
+        if (!active()) {
             return;
         }
         PlayerInventory inventory = player.getInventory();
@@ -160,7 +233,7 @@ public final class TeamUniformService implements Listener {
     /** 拦截对队服所在盔甲槽的点击 —— 点一下就能取下来的话，兜底校正会一直和玩家打架。 */
     @EventHandler(ignoreCancelled = true)
     public void onClick(InventoryClickEvent event) {
-        if (!plugin.getSettings().uniformEnabled) {
+        if (!active()) {
             return;
         }
         if (!(event.getWhoClicked() instanceof Player player)) {
