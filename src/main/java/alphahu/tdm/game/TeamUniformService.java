@@ -125,27 +125,61 @@ public final class TeamUniformService implements Listener {
     /**
      * WBDAddon 的队伍护甲模块是否处于开启状态。
      *
-     * <p>读的是 {@code plugins/WBDAddon/config.yml} 的
-     * {@code modules.team-armor.enabled}。读取失败一律按「没开」处理 ——
-     * 那样最多是两套队服都不套（玩家没有队服），而不是两套互相覆盖。
+     * <p>判定必须和 WBDAddon 自己的逻辑**完全一致**，否则仲裁会判反。它的
+     * {@code ModuleManager.enableAll()} 是：
+     * <pre>getBoolean("modules." + id + ".enabled", module.isEnabledByDefault())</pre>
+     * 而 {@code TeamArmorModule.isEnabledByDefault()} 返回 <b>true</b>。
+     * 也就是说：**配置里没有这个键时，模块是开着的**。
+     *
+     * <p>这里踩过一次：最初把「键不存在」当成「旧版没有该模块 → 不归它管」，
+     * 但服务器上那份 config.yml 是很早以前生成的（新版加模块时 Bukkit 并不会
+     * 把新键合并进已有文件），于是键确实不存在、模块却在跑，仲裁判反，
+     * 本插件又去套自己的队服。
+     *
+     * <p>区分「旧版根本没有这个模块」靠的是**类是否存在**：用字符串方式探一下
+     * WBDAddon 的类加载器，不产生编译期依赖，也就不违反本项目「只有 bridge
+     * 类可以接触 alphahu.wbdaddon.*」的约定。
      */
     private boolean wbdAddonTeamArmorEnabled() {
         var addon = Bukkit.getPluginManager().getPlugin("WBDAddon");
         if (addon == null) {
             return false;
         }
+        if (!moduleClassPresent(addon)) {
+            // 旧版 WBDAddon 没有这个模块，队伍护甲自然不归它管
+            return false;
+        }
         File config = new File(addon.getDataFolder(), "config.yml");
         if (!config.isFile()) {
-            // 插件在、配置还没生成：它下次启动会用自带默认值（开启），
-            // 所以这里按「开启」处理，免得两边同时上手
+            // 插件在、配置还没生成：它启动时会用默认值（开启）
             return true;
         }
         try {
             YamlConfiguration yaml = YamlConfiguration.loadConfiguration(config);
-            return yaml.getBoolean("modules.team-armor.enabled", false);
+            // 缺省值与 TeamArmorModule.isEnabledByDefault() 保持一致，都是 true
+            return yaml.getBoolean("modules.team-armor.enabled", true);
         } catch (RuntimeException e) {
             plugin.getLogger().warning("读取 WBDAddon 的 config.yml 失败，"
                     + "队伍护甲按「未开启」处理：" + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * WBDAddon 里是否存在「队伍护甲」模块类。
+     *
+     * <p>用字符串 + 对方的类加载器探测，**不引入编译期依赖**：本项目约定
+     * 只有 {@code WbdAddonModeBridge} 可以出现 {@code alphahu.wbdaddon.*} 的
+     * 类型引用，这里只写了一个类名字符串，不涉及 import。
+     *
+     * <p>{@code initialize=false}：只判断存在性，不触发静态初始化。
+     */
+    private static boolean moduleClassPresent(org.bukkit.plugin.Plugin addon) {
+        try {
+            Class.forName("alphahu.wbdaddon.module.TeamArmorModule", false,
+                    addon.getClass().getClassLoader());
+            return true;
+        } catch (ClassNotFoundException | LinkageError e) {
             return false;
         }
     }

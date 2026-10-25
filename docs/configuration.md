@@ -204,11 +204,18 @@ teammate:
 | 情况 | 谁负责 |
 |---|---|
 | WBDAddon 没装 | **本插件** |
-| WBDAddon 装了，`config.yml` 里 `modules.team-armor.enabled: false` | **本插件** |
-| WBDAddon 装了，配置里没有这个键（旧版本没有该模块） | **本插件** |
-| WBDAddon 装了，且 `modules.team-armor.enabled: true` | **WBDAddon**，本插件完全不碰盔甲槽 |
+| WBDAddon 装了，但没有 `TeamArmorModule` 这个类（旧版本） | **本插件** |
+| WBDAddon 装了且有该模块，`modules.team-armor.enabled: false` | **本插件** |
+| WBDAddon 装了且有该模块，`modules.team-armor.enabled: true` | **WBDAddon**，本插件完全不碰盔甲槽 |
+| WBDAddon 装了且有该模块，但 `config.yml` 里**没有这个键** | **WBDAddon** —— 与它自己的语义一致，见下 |
 
-判定读的是 `plugins/WBDAddon/config.yml`，因为 WBDAddon 的对外 API 只暴露模式注册与玩家状态，不暴露「某个模块开没开」；读对方 data 目录是本插件已有的做法（读 WarZBombDefuse 的 `arenas.yml` 用的就是同一招）。读取失败一律按「没开」处理 —— 最坏情况是两套都不套，而不是互相覆盖。
+> 最后一行容易判反：WBDAddon 的 `ModuleManager` 是
+> `getBoolean("modules." + id + ".enabled", module.isEnabledByDefault())`，
+> 而 `TeamArmorModule.isEnabledByDefault()` 返回 **true**。也就是说**键缺失 = 模块开着**。
+> 服务器上的 config.yml 往往是旧版生成的，新版加模块时 Bukkit 并不会把新键合并进已有文件，
+> 所以「键不存在」很常见，不能当成本插件负责。
+
+判定读的是 `plugins/WBDAddon/config.yml`，因为 WBDAddon 的对外 API 只暴露模式注册与玩家状态，不暴露「某个模块开没开」；读对方 data 目录是本插件已有的做法（读 WarZBombDefuse 的 `arenas.yml` 用的就是同一招）。「有没有这个模块」则用类名探测对方类加载器（`Class.forName(..., false, loader)`，不产生编译期依赖）。读取失败一律按「没开」处理 —— 最坏情况是两套都不套，而不是互相覆盖。
 
 结论会打印在启动日志和 `/tdm reload` 的最后一行：
 
