@@ -16,6 +16,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -170,29 +171,36 @@ public final class TeamUniformService implements Listener {
 
     private ItemStack build(TdmTeam team) {
         ItemStack item = new ItemStack(slot.material);
-        LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
-        if (meta == null) {
+        // 不写 (LeatherArmorMeta) 强转：混合端（Arclight）上并不保证给皮革专用实现，
+        // 拿到通用 meta 时颜色只能放弃，但标记与负护甲修饰必须照样打上
+        ItemMeta raw = item.getItemMeta();
+        if (raw == null) {
             return item;
         }
         TdmSettings settings = plugin.getSettings();
-        meta.setColor(parseColor(team == TdmTeam.T ? settings.uniformTColor : settings.uniformCtColor,
-                team));
-        meta.setUnbreakable(true);
+        if (raw instanceof LeatherArmorMeta leather) {
+            leather.setColor(parseColor(
+                    team == TdmTeam.T ? settings.uniformTColor : settings.uniformCtColor, team));
+        } else {
+            plugin.getLogger().warning("队服：本服务端没有为 " + slot.material
+                    + " 返回皮革专用 meta，颜色无法设置（其余功能正常）。");
+        }
+        raw.setUnbreakable(true);
         // HIDE_ATTRIBUTES：不遮的话 tooltip 上会多一行「护甲 -1」。
         // HIDE_DYE：避免物品说明里出现「已染色」，看起来像可编辑的普通装备。
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DYE);
+        raw.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DYE);
         // displayName() 返回的是带 & 代码的串，必须转义后再设，否则会原样显示 "&cT 方"
-        meta.setDisplayName(Text.color(team.displayName() + " &7队服"));
+        raw.setDisplayName(Text.color(team.displayName() + " &7队服"));
 
         // 用等值负数把皮革自带的护甲值抵掉：外观留下，护甲收益为 0
-        meta.addAttributeModifier(Attribute.GENERIC_ARMOR,
+        raw.addAttributeModifier(Attribute.GENERIC_ARMOR,
                 new AttributeModifier(ARMOR_MODIFIER_UUID, "tdm_uniform_armor",
                         -slot.baseArmor, AttributeModifier.Operation.ADD_NUMBER));
 
         // 打标记，用于识别「这件是不是我们发的」
-        meta.getPersistentDataContainer().set(marker, PersistentDataType.BYTE, (byte) 1);
+        raw.getPersistentDataContainer().set(marker, PersistentDataType.BYTE, (byte) 1);
 
-        item.setItemMeta(meta);
+        item.setItemMeta(raw);
         return item;
     }
 
@@ -239,12 +247,20 @@ public final class TeamUniformService implements Listener {
         }
     }
 
-    /** 这件物品是不是本插件发的队服。 */
+    /**
+     * 这件物品是不是本插件发的队服。
+     *
+     * <p><b>这里绝不能把 meta 强转成 {@link LeatherArmorMeta}</b>：本方法要对盔甲槽里
+     * 的**任意**物品作答，而钻石头盔、模组物品的 meta 是通用实现
+     * （Arclight 上是 {@code CraftMetaItem}），强转会抛 ClassCastException。
+     * 那个异常每 tick 抛一次，会把整段比赛 tick 和复活流程一起打断 ——
+     * 表现就是「复活卡在出生点」。标记存在通用 meta 的 PDC 里，不转型也读得到。
+     */
     private boolean isUniform(ItemStack item) {
         if (item == null || item.getType().isAir()) {
             return false;
         }
-        LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
+        ItemMeta meta = item.getItemMeta();
         return meta != null && meta.getPersistentDataContainer()
                 .get(marker, PersistentDataType.BYTE) != null;
     }
