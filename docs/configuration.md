@@ -156,6 +156,35 @@ teammate:
 
 需要 WBDAddon **1.2.1+**。低于此版本该功能静默失效，插件会在控制台打印警告。
 
+#### 队伍皮肤（`teammate.skin`）
+
+```yaml
+teammate:
+  skin:
+    enabled: false
+    t-skin: ""                              # T 方皮肤名，留空则该方不换
+    ct-skin: ""                             # CT 方皮肤名
+    apply-command: "skin set %skin% %player%"
+    restore-command: "skin undo %player%"
+```
+
+这是**真皮肤**，不是皮革甲：玩家皮肤由客户端从 profile 纹理里取，服务端自己改不了，必须依赖 SkinsRestorer 这类插件。命令模板默认对应 SkinsRestorer 15.x 的 `/skin set <皮肤名> <玩家>` —— 注意**皮肤名在前、玩家在后**。
+
+做成命令模板而不是直接调 API，是因为这类插件的 API 在不同版本间改名频繁，而命令语法相对稳定；模板化之后 SkinsRestorer、SkinShuffle 甚至自写的小插件都能接。占位符 `%player%`、`%skin%`。
+
+还原默认用 `skin undo`，即退回上一张皮肤，**不会动玩家自己设过的皮肤**。如果确定全员都不靠自己设皮肤，也可以改成 `skin clear %player%`，但那样会连带抹掉玩家原本的皮肤。
+
+插件会在玩家身上写一个 PDC 标记，用于崩溃后补救：服务端在比赛中崩溃的话，玩家下次进服会被自动还原一次。关服时也会统一还原。
+
+| 项 | 默认 | 说明 |
+|---|---|---|
+| `enabled` | `false` | 总开关。关闭时不发任何命令 |
+| `t-skin` / `ct-skin` | 空 | 填 SkinsRestorer 认识的名字：正版 ID，或 `/sr createcustom` 建的自定义皮肤名 |
+| `apply-command` | `skin set %skin% %player%` | 进场时以控制台身份执行 |
+| `restore-command` | `skin undo %player%` | 离场、退出、关服时执行 |
+
+换皮肤会让客户端重新加载该玩家的模型，进场那一下有极短重绘，属正常现象。
+
 ---
 
 ## arenas.yml

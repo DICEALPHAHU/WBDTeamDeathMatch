@@ -121,6 +121,13 @@ public final class TdmSettings {
     public final boolean teammateNameTag;
     public final String teammateNameTagPrefix;
 
+    // ---- 队伍皮肤 ----
+    public final boolean skinEnabled;
+    public final String skinT;
+    public final String skinCt;
+    public final String skinApplyCommand;
+    public final String skinRestoreCommand;
+
     // ---- integration ----
     public final boolean wbdAddon;
     public final boolean useWbdAddonHud;
@@ -241,6 +248,14 @@ public final class TdmSettings {
 
         this.teammateNameTag = c.getBoolean("teammate.name-tag", true);
         this.teammateNameTagPrefix = c.getString("teammate.name-tag-prefix", "&a[队友] &f");
+
+        this.skinEnabled = c.getBoolean("teammate.skin.enabled", false);
+        this.skinT = c.getString("teammate.skin.t-skin", "");
+        this.skinCt = c.getString("teammate.skin.ct-skin", "");
+        this.skinApplyCommand = c.getString("teammate.skin.apply-command",
+                "skin set %skin% %player%");
+        this.skinRestoreCommand = c.getString("teammate.skin.restore-command",
+                "skin undo %player%");
     }
 
     /** 把目录名收束成一个安全的值，避免 ../ 之类把它带出数据目录。 */

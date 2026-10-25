@@ -234,6 +234,10 @@ public final class TdmMatch {
         players.put(player.getUniqueId(), record);
         snapshots.put(player.getUniqueId(), new PlayerSnapshot(player));
 
+        // 队伍皮肤：进场这一刻套上，离场时由 leave() 还原。
+        // 放在这里而不是 spawnPlayer 里 —— 复活不该重复下发皮肤命令
+        plugin.getSkins().apply(player, team);
+
         // 中途加入标记必须在**加入这一刻**定下来。段位结算读它，
         // 而结算发生在比赛结束之后 —— 那时再判断「比赛是否在进行」永远是 false
         record.setJoinedLate(state == MatchState.LIVE);
@@ -309,6 +313,8 @@ public final class TdmMatch {
             return;
         }
 
+        // 皮肤是改在皮肤插件数据库里的，不还原会一直跟着玩家
+        plugin.getSkins().restore(player);
         plugin.getHud().clearPlayerHud(player);
         // 侧边栏挂在主计分板上，原版没法只对一个人隐藏它 ——
         // 所以退出的人必须换一块独立计分板，否则那一栏会一直留在屏幕上

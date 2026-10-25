@@ -6,6 +6,7 @@ import alphahu.tdm.command.TdmCommand;
 import alphahu.tdm.config.TdmSettings;
 import alphahu.tdm.game.LoadoutService;
 import alphahu.tdm.game.MatchManager;
+import alphahu.tdm.game.SkinService;
 import alphahu.tdm.hud.MatchHud;
 import alphahu.tdm.integration.AddonBridge;
 import alphahu.tdm.integration.DamageLedger;
@@ -58,6 +59,7 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
     private Messages messages;
     private RankedService ranked;
     private ReportService reports;
+    private SkinService skins;
 
     /** 比赛主循环任务。 */
     private BukkitTask tickTask;
@@ -191,9 +193,15 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
         // 4. 接入 WBDAddon（软依赖，取不到就降级）
         this.addonBridge = new AddonBridge(this);
 
+        // 4.5 队伍皮肤（软依赖，靠命令模板接皮肤插件；没装就什么都不做）
+        this.skins = new SkinService(this);
+        skins.checkPrerequisites();
+
         // 5. 监听战斗事件与商店交互
         Bukkit.getPluginManager().registerEvents(new CombatListener(this, matchManager), this);
         Bukkit.getPluginManager().registerEvents(new ShopListener(this), this);
+        // 崩溃重启后的皮肤补救要在玩家进服时就能响应
+        Bukkit.getPluginManager().registerEvents(skins, this);
         this.shopEditor = new ShopEditor(this);
         Bukkit.getPluginManager().registerEvents(shopEditor, this);
         // 战报界面的点击与拖拽拦截
@@ -336,6 +344,12 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
             matchManager.shutdown();
         }
 
+        // 把还穿着队伍皮肤的人还原。必须排在清场之后：清场会走 leave()，
+        // 那条路径已经把皮肤还原过了，这里只是兜底（例如清场途中抛了异常）
+        if (skins != null) {
+            skins.restoreAll();
+        }
+
         if (hud != null) {
             hud.shutdown();
         }
@@ -436,6 +450,11 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
     /** 战报服务。 */
     public ReportService getReports() {
         return reports;
+    }
+
+    /** 队伍皮肤服务。 */
+    public SkinService getSkins() {
+        return skins;
     }
 
     /**
