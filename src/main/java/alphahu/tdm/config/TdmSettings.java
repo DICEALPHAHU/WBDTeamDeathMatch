@@ -263,7 +263,9 @@ public final class TdmSettings {
         this.skinRestoreCommand = c.getString("teammate.skin.restore-command",
                 "skin undo %player%");
 
-        this.uniformEnabled = c.getBoolean("teammate.uniform.enabled", true);
+        // 默认关闭：WBDAddon 1.2.1 起自带「队伍护甲」模块，功能重叠；
+        // 两边同时开会在同一个盔甲槽上互相覆盖，导致物品无限复制
+        this.uniformEnabled = c.getBoolean("teammate.uniform.enabled", false);
         this.uniformSlot = c.getString("teammate.uniform.slot", "HELMET");
         this.uniformTColor = c.getString("teammate.uniform.t-color", "#C0392B");
         this.uniformCtColor = c.getString("teammate.uniform.ct-color", "#2E86DE");

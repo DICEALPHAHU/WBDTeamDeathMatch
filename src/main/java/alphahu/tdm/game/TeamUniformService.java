@@ -100,14 +100,27 @@ public final class TeamUniformService implements Listener {
             return;
         }
         PlayerInventory inventory = player.getInventory();
+        // 槽位被占着就让位：见 assertUniform 上方那段说明
+        if (occupied(inventory)) {
+            return;
+        }
         set(inventory, build(team));
         player.updateInventory();
     }
 
     /**
-     * 兜底校正：槽位里不是本队的队服就补一件。
+     * 兜底校正：槽位空着就补一件本队队服。
      *
-     * <p>已经是队服时什么都不做（热路径，每场每秒都会走一遍）。
+     * <p><b>槽位被别的物品占着时一律让位，绝不抢占。</b>
+     *
+     * <p>这里踩过一次很严重的坑：最初的做法是「把槽位里的东西挪进背包，
+     * 再套上自己的」，看着很周到，实际会出人命 —— WBDAddon 有一个同类模块
+     * （{@code TeamArmorModule}），它的逻辑是「头盔不是我的就直接覆盖」。
+     * 两边都在每秒强制校正，于是：它覆盖我 → 我把它挪进背包再套我的 →
+     * 它再覆盖……玩家背包里每秒多一件皮革头盔，**无限复制**。
+     *
+     * <p>现在改成「只填空槽」：任何一方占住之后，另一方都不会再动它。
+     * 想让队服真正生效，就别和别的插件同时开同一个槽位的队服。
      */
     public void assertUniform(Player player, TdmTeam team) {
         if (!plugin.getSettings().uniformEnabled) {
@@ -117,20 +130,21 @@ public final class TeamUniformService implements Listener {
         if (isUniform(get(inventory))) {
             return;
         }
-
-        // 背包里散落的队服副本先清掉，避免「取下来又补发」变成复制
-        purgeStray(inventory);
-
-        // 槽位里如果有玩家自己的装备（比如自己买的头盔），挪回背包而不是销毁
-        ItemStack existing = get(inventory);
-        if (existing != null && !existing.getType().isAir() && !isUniform(existing)) {
-            if (!inventory.addItem(existing).isEmpty()) {
-                player.getWorld().dropItemNaturally(player.getLocation(), existing);
-            }
+        if (occupied(inventory)) {
+            return;
         }
+
+        // 背包里散落的队服副本先清掉，避免「取下来 → 补发」变成复制
+        purgeStray(inventory);
 
         set(inventory, build(team));
         player.updateInventory();
+    }
+
+    /** 该槽位是否已被任何物品占着（无论是不是队服）。 */
+    private boolean occupied(PlayerInventory inventory) {
+        ItemStack current = get(inventory);
+        return current != null && !current.getType().isAir();
     }
 
     /** 离场时清掉队服。**必须排在快照还原之前**，否则会把玩家自己的盔甲一起清掉。 */
