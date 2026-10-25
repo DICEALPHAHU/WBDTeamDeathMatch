@@ -20,7 +20,9 @@ import org.bukkit.scoreboard.Team;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -93,6 +95,12 @@ public final class MatchHud {
 
     /** 每块板子上次镜像队伍的时刻（毫秒）。 */
     private final Map<UUID, Long> lastMirrorAt = new HashMap<>();
+
+    /** 已经因为「计分板被抢」告警过的玩家，避免每 2 tick 刷一行。 */
+    private final Set<UUID> boardStolenWarned = new HashSet<>();
+
+    /** 已经打过一次性名牌诊断的玩家。 */
+    private final Set<UUID> nameTagDiagnosed = new HashSet<>();
 
     /** 一条待显示的击杀提示。 */
     private static final class KillMessage {
@@ -331,6 +339,20 @@ public final class MatchHud {
             board = createBoard(player);
             boards.put(player.getUniqueId(), board);
             player.setScoreboard(board);
+        } else if (player.getScoreboard() != board) {
+            // 别的插件把玩家的计分板换走了。
+            //
+            // 后果不只是「侧边栏消失」：我们镜像到这块板子上的 wbd_* 队伍
+            // （NAME_TAG_VISIBILITY = FOR_OWN_TEAM 就藏在里面）也跟着到不了客户端，
+            // 于是敌人名牌重新可见、JourneyMap 队友关系也一起失效。
+            // 本插件只在建板子时 setScoreboard 一次，所以必须在这里补回来。
+            player.setScoreboard(board);
+            if (boardStolenWarned.add(player.getUniqueId())) {
+                plugin.getLogger().warning("检测到 " + player.getName()
+                        + " 的计分板被其他插件替换，已重新接管。"
+                        + "若反复出现，说明有插件在和本插件抢计分板，"
+                        + "会连带影响敌人名牌隐藏。");
+            }
         }
 
         // 低频镜像原版队伍：JourneyMap 靠它判断队友关系，
@@ -341,7 +363,41 @@ public final class MatchHud {
             mirrorTeams(board);
         }
 
+        // 每个玩家一次：把两块板子上的名牌可见性打出来，便于排查
+        // 「敌人名牌为什么还看得见」——是板子没接管，还是选项没搬过去
+        if (nameTagDiagnosed.add(player.getUniqueId())) {
+            dumpNameTagState(player, board);
+        }
+
         updateLines(board, buildLines(match, player, now));
+    }
+
+    /**
+     * 一次性诊断：主板与本插件板上的 {@code NAME_TAG_VISIBILITY} 各是什么。
+     *
+     * <p>这行日志只在每个玩家第一次渲染时打一次，用来区分两类故障：
+     * 板子没被本插件接管（客户端拿不到 wbd_* 队伍），还是队伍选项没镜像过去。
+     */
+    private void dumpNameTagState(Player player, Scoreboard board) {
+        var manager = Bukkit.getScoreboardManager();
+        if (manager == null) {
+            return;
+        }
+        Scoreboard main = manager.getMainScoreboard();
+        StringBuilder sb = new StringBuilder("名牌诊断 ")
+                .append(player.getName())
+                .append("：计分板已接管=").append(player.getScoreboard() == board);
+        for (Team source : main.getTeams()) {
+            if (!source.getName().startsWith("wbd_")) {
+                continue;
+            }
+            Team copy = board.getTeam(source.getName());
+            sb.append(" | ").append(source.getName())
+                    .append(" 主板=").append(source.getOption(Team.Option.NAME_TAG_VISIBILITY))
+                    .append(" 本板=")
+                    .append(copy == null ? "缺失" : copy.getOption(Team.Option.NAME_TAG_VISIBILITY));
+        }
+        plugin.getLogger().info(sb.toString());
     }
 
     private List<String> buildLines(TdmMatch match, Player player, long now) {
@@ -486,6 +542,8 @@ public final class MatchHud {
     private void removeBoard(Player player) {
         boards.remove(player.getUniqueId());
         lastMirrorAt.remove(player.getUniqueId());
+        boardStolenWarned.remove(player.getUniqueId());
+        nameTagDiagnosed.remove(player.getUniqueId());
         if (player.isOnline() && Bukkit.getScoreboardManager() != null) {
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
         }
