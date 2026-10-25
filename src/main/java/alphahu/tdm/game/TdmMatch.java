@@ -81,6 +81,9 @@ public final class TdmMatch {
     /** HUD 刷新降频计数。 */
     private int hudCounter;
 
+    /** 队服校正计数：每 20 tick（约 1 秒）走一次兜底检查。 */
+    private int uniformCounter;
+
     /**
      * 是否正在清场。
      *
@@ -315,6 +318,11 @@ public final class TdmMatch {
 
         // 皮肤是改在皮肤插件数据库里的，不还原会一直跟着玩家
         plugin.getSkins().restore(player);
+
+        // 队服必须排在快照还原之前：先摘掉队服，再让 snapshot 把玩家自己的盔甲穿回去。
+        // 顺序反过来的话，摘队服这一步会把还原好的装备一起清掉
+        plugin.getUniform().remove(player);
+
         plugin.getHud().clearPlayerHud(player);
         // 侧边栏挂在主计分板上，原版没法只对一个人隐藏它 ——
         // 所以退出的人必须换一块独立计分板，否则那一栏会一直留在屏幕上
@@ -462,6 +470,17 @@ public final class TdmMatch {
         // 独立计分板，不再有「多人共用一块、需要单独降频」的问题。
         if (++hudCounter % 2 == 0) {
             refreshPlayerHud(now);
+        }
+
+        // 队服兜底：每秒校正一次。点击拦截挡得住大部分路径，但拖拽、别的插件、
+        // 甚至死亡掉落后重新穿回都会绕过它 —— 而队服一旦被换掉，「分辨敌我」就没了
+        if (++uniformCounter % 20 == 0) {
+            for (TdmPlayer record : players.values()) {
+                Player player = Bukkit.getPlayer(record.uuid());
+                if (player != null) {
+                    plugin.getUniform().assertUniform(player, record.team());
+                }
+            }
         }
     }
 

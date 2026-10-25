@@ -7,6 +7,7 @@ import alphahu.tdm.config.TdmSettings;
 import alphahu.tdm.game.LoadoutService;
 import alphahu.tdm.game.MatchManager;
 import alphahu.tdm.game.SkinService;
+import alphahu.tdm.game.TeamUniformService;
 import alphahu.tdm.hud.MatchHud;
 import alphahu.tdm.integration.AddonBridge;
 import alphahu.tdm.integration.DamageLedger;
@@ -60,6 +61,7 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
     private RankedService ranked;
     private ReportService reports;
     private SkinService skins;
+    private TeamUniformService uniform;
 
     /** 比赛主循环任务。 */
     private BukkitTask tickTask;
@@ -197,11 +199,16 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
         this.skins = new SkinService(this);
         skins.checkPrerequisites();
 
+        // 4.6 队伍队服：纯原版染色皮革，带负护甲修饰所以不提供护甲收益
+        this.uniform = new TeamUniformService(this);
+
         // 5. 监听战斗事件与商店交互
         Bukkit.getPluginManager().registerEvents(new CombatListener(this, matchManager), this);
         Bukkit.getPluginManager().registerEvents(new ShopListener(this), this);
         // 崩溃重启后的皮肤补救要在玩家进服时就能响应
         Bukkit.getPluginManager().registerEvents(skins, this);
+        // 拦截把队服从盔甲槽里取下来的点击
+        Bukkit.getPluginManager().registerEvents(uniform, this);
         this.shopEditor = new ShopEditor(this);
         Bukkit.getPluginManager().registerEvents(shopEditor, this);
         // 战报界面的点击与拖拽拦截
@@ -455,6 +462,11 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
     /** 队伍皮肤服务。 */
     public SkinService getSkins() {
         return skins;
+    }
+
+    /** 队伍队服服务。 */
+    public TeamUniformService getUniform() {
+        return uniform;
     }
 
     /**

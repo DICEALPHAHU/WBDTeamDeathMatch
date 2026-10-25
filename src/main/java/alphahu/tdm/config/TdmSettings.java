@@ -128,6 +128,12 @@ public final class TdmSettings {
     public final String skinApplyCommand;
     public final String skinRestoreCommand;
 
+    // ---- 队伍队服 ----
+    public final boolean uniformEnabled;
+    public final String uniformSlot;
+    public final String uniformTColor;
+    public final String uniformCtColor;
+
     // ---- integration ----
     public final boolean wbdAddon;
     public final boolean useWbdAddonHud;
@@ -139,8 +145,8 @@ public final class TdmSettings {
         this.targetKills = Math.max(0, c.getInt("match.target-kills", 50));
         this.timeLimitSeconds = Math.max(0, c.getInt("match.time-limit-seconds", 900));
         this.countdownSeconds = Math.max(0, c.getInt("match.countdown-seconds", 10));
-        this.endDelaySeconds = Math.max(1, c.getInt("match.end-delay-seconds", 15));
-        this.autoRestart = c.getBoolean("match.auto-restart", true);
+        this.endDelaySeconds = Math.max(1, c.getInt("match.end-delay-seconds", 30));
+        this.autoRestart = c.getBoolean("match.auto-restart", false);
         this.minPlayers = Math.max(1, c.getInt("match.min-players", 2));
         this.autoBalance = c.getBoolean("match.auto-balance", true);
 
@@ -256,6 +262,11 @@ public final class TdmSettings {
                 "skin set %skin% %player%");
         this.skinRestoreCommand = c.getString("teammate.skin.restore-command",
                 "skin undo %player%");
+
+        this.uniformEnabled = c.getBoolean("teammate.uniform.enabled", true);
+        this.uniformSlot = c.getString("teammate.uniform.slot", "HELMET");
+        this.uniformTColor = c.getString("teammate.uniform.t-color", "#C0392B");
+        this.uniformCtColor = c.getString("teammate.uniform.ct-color", "#2E86DE");
     }
 
     /** 把目录名收束成一个安全的值，避免 ../ 之类把它带出数据目录。 */

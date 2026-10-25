@@ -84,6 +84,9 @@ public final class LoadoutService {
         // 命令类条目（loadout 里 cmd: 开头的那些）。
         // dispatchCommands 自己会延后一 tick 执行，不必在这里再包一层。
         dispatchCommands(player, team);
+
+        // 队服放在最后：上面 clear-inventory 会连盔甲槽一起清掉，先穿等于白穿
+        plugin.getUniform().apply(player, team);
     }
 
     /**
@@ -148,6 +151,10 @@ public final class LoadoutService {
 
         resetVitals(player);
         player.updateInventory();
+
+        // 复活保留背包，队服正常还在；assertUniform 在「还在」时什么都不做，
+        // 只在被玩家换掉/打碎时才补一件
+        plugin.getUniform().assertUniform(player, team);
 
         // 刻意不重跑 loadout 里的 cmd: 命令。
         // 那是「进入比赛」的一次性动作，每次复活都执行一遍的话，
