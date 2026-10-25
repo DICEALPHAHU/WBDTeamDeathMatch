@@ -3,6 +3,7 @@ package alphahu.tdm.integration;
 import alphahu.tdm.WBDTeamDeathmatch;
 import alphahu.tdm.game.TdmMatch;
 import alphahu.tdm.game.TdmPlayer;
+import alphahu.tdm.game.TdmTeam;
 import alphahu.wbdaddon.api.AddonMode;
 import alphahu.wbdaddon.api.CombatStats;
 import alphahu.wbdaddon.api.WbdAddonApi;
@@ -308,18 +309,27 @@ public final class WbdAddonModeBridge implements ModeBridge, AddonMode {
     }
 
     /**
-     * 队友头顶名牌的前缀。
+     * 阵营前缀。
      *
      * <p>前缀由 WBDAddon 写进原版队伍，而队伍是按「模式 + 阵营」划分的，
-     * 所以它天然只加在队友头上。但仅靠前缀还不够 —— 原版队伍的前缀是
-     * 「所有人的客户端都收得到」的，必须配合下面的
-     * {@link #hideEnemyNameTags()} 才能保证敌人那边不会也顶着一个「[队友]」。
+     * 所以它天然只加在同类身上。
+     *
+     * <p><b>两个阵营必须用不同的前缀。</b>原版队伍前缀不只在头顶名牌上生效，
+     * 也会出现在 TAB 列表与计分板的玩家名前面 —— 而 {@code NAME_TAG_VISIBILITY}
+     * 只管头顶名牌，管不到 TAB。两边配成同一个字符串（例如都写「[队友]」）时，
+     * 敌人在 TAB 里也会顶着「[队友]」，看起来就像队伍分错了。
      */
     @Override
     public String nameTagPrefix(Player player) {
-        return plugin.getSettings().teammateNameTag
-                ? plugin.getSettings().teammateNameTagPrefix
-                : null;
+        if (!plugin.getSettings().teammateNameTag) {
+            return null;
+        }
+        TdmMatch match = match(player);
+        TdmPlayer record = match == null ? null : match.getPlayer(player);
+        boolean ct = record != null && record.team() == TdmTeam.CT;
+        return ct
+                ? plugin.getSettings().teammateNameTagPrefixCt
+                : plugin.getSettings().teammateNameTagPrefixT;
     }
 
     /**

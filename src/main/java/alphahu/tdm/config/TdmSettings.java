@@ -119,7 +119,9 @@ public final class TdmSettings {
 
     // ---- 队友名牌 ----
     public final boolean teammateNameTag;
-    public final String teammateNameTagPrefix;
+    /** T 方队伍前缀。两个前缀必须不同，否则 TAB 列表里敌我都会显示成一样。 */
+    public final String teammateNameTagPrefixT;
+    public final String teammateNameTagPrefixCt;
 
     // ---- 队伍皮肤 ----
     public final boolean skinEnabled;
@@ -255,7 +257,12 @@ public final class TdmSettings {
         this.shopBuyZoneRequired = c.getBoolean("shop.buy-zone-required", false);
 
         this.teammateNameTag = c.getBoolean("teammate.name-tag", true);
-        this.teammateNameTagPrefix = c.getString("teammate.name-tag-prefix", "&a[队友] &f");
+        // 两个前缀分开配：队伍前缀会同时出现在**头顶名牌**和 TAB 列表里，
+        // 两边用同一个字符串的话，TAB 里敌我都显示成「[队友]」，等于没区分
+        this.teammateNameTagPrefixT =
+                c.getString("teammate.name-tag-prefix-t", "&c[T] &f");
+        this.teammateNameTagPrefixCt =
+                c.getString("teammate.name-tag-prefix-ct", "&b[CT] &f");
 
         this.skinEnabled = c.getBoolean("teammate.skin.enabled", false);
         this.skinT = c.getString("teammate.skin.t-skin", "");
