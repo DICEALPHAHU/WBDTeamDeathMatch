@@ -134,6 +134,8 @@ public final class TdmSettings {
     public final boolean uniformEnabled;
     /** 若 WBDAddon 已开启队伍护甲，本插件是否让位（不套自己的队服）。 */
     public final boolean uniformFollowWbdAddon;
+    /** 是否强行顶掉玩家原有的护甲（钻石套等）。默认 false：只填空槽。 */
+    public final boolean uniformOverwriteExisting;
     public final String uniformSlot;
     public final String uniformTColor;
     public final String uniformCtColor;
@@ -276,6 +278,7 @@ public final class TdmSettings {
         // WBDAddon 那边开了队伍护甲就让位，没开才由本插件套
         this.uniformEnabled = c.getBoolean("teammate.uniform.enabled", true);
         this.uniformFollowWbdAddon = c.getBoolean("teammate.uniform.follow-wbdaddon", true);
+        this.uniformOverwriteExisting = c.getBoolean("teammate.uniform.overwrite-existing", false);
         this.uniformSlot = c.getString("teammate.uniform.slot", "HELMET");
         this.uniformTColor = c.getString("teammate.uniform.t-color", "#C0392B");
         this.uniformCtColor = c.getString("teammate.uniform.ct-color", "#2E86DE");

@@ -207,9 +207,12 @@ public final class TeamUniformService implements Listener {
             return;
         }
         PlayerInventory inventory = player.getInventory();
-        // 槽位被占着就让位：见 assertUniform 上方那段说明
-        if (occupied(inventory)) {
-            return;
+        // 槽位被占着：默认让位；overwrite-existing=true 时先把原护甲塞回背包再换
+        if (occupied(inventory) && !isUniform(get(inventory))) {
+            if (!overwriteExisting()) {
+                return;
+            }
+            reclaim(player, get(inventory));
         }
         set(inventory, build(team));
         player.updateInventory();
@@ -218,7 +221,9 @@ public final class TeamUniformService implements Listener {
     /**
      * 兜底校正：槽位空着就补一件本队队服。
      *
-     * <p><b>槽位被别的物品占着时一律让位，绝不抢占。</b>
+     * <p><b>槽位被别的物品占着时默认让位，绝不抢占。</b>
+     * 只有 {@code teammate.uniform.overwrite-existing: true} 才会顶掉，
+     * 且原有护甲会先塞回背包（塞不下才掉在脚下），不会凭空销毁。
      *
      * <p>这里踩过一次很严重的坑：最初的做法是「把槽位里的东西挪进背包，
      * 再套上自己的」，看着很周到，实际会出人命 —— WBDAddon 有一个同类模块
@@ -226,7 +231,7 @@ public final class TeamUniformService implements Listener {
      * 两边都在每秒强制校正，于是：它覆盖我 → 我把它挪进背包再套我的 →
      * 它再覆盖……玩家背包里每秒多一件皮革头盔，**无限复制**。
      *
-     * <p>现在改成「只填空槽」：任何一方占住之后，另一方都不会再动它。
+     * <p>现在默认「只填空槽」：任何一方占住之后，另一方都不会再动它。
      * 想让队服真正生效，就别和别的插件同时开同一个槽位的队服。
      */
     public void assertUniform(Player player, TdmTeam team) {
@@ -238,7 +243,10 @@ public final class TeamUniformService implements Listener {
             return;
         }
         if (occupied(inventory)) {
-            return;
+            if (!overwriteExisting()) {
+                return;
+            }
+            reclaim(player, get(inventory));
         }
 
         // 背包里散落的队服副本先清掉，避免「取下来 → 补发」变成复制
@@ -246,6 +254,20 @@ public final class TeamUniformService implements Listener {
 
         set(inventory, build(team));
         player.updateInventory();
+    }
+
+    private boolean overwriteExisting() {
+        return plugin.getSettings().uniformOverwriteExisting;
+    }
+
+    /** 把被顶掉的原有护甲塞回背包；塞不下就掉在脚下，不凭空销毁。 */
+    private void reclaim(Player player, ItemStack old) {
+        if (old == null || old.getType().isAir()) {
+            return;
+        }
+        var leftover = player.getInventory().addItem(old.clone());
+        leftover.values().forEach(item ->
+                player.getWorld().dropItemNaturally(player.getLocation(), item));
     }
 
     /** 该槽位是否已被任何物品占着（无论是不是队服）。 */
