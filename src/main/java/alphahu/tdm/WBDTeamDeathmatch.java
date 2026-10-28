@@ -69,6 +69,9 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
     /** 赛季到期检查任务。 */
     private BukkitTask seasonTask;
 
+    /** 装备归位任务。 */
+    private BukkitTask loadoutTask;
+
     // ------------------------------------------------------------------
     // 生命周期
     // ------------------------------------------------------------------
@@ -230,6 +233,11 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
         //    查得再勤也只是白白读写一次数据库
         this.seasonTask = Bukkit.getScheduler().runTaskTimer(this,
                 () -> ranked.tickSeason(), 20L * 60, 20L * 300);
+
+        // 10. 装备归位：把商品摆回它该待的格子，把杂物赶出预留格。
+        //     一秒一次足够——玩家不会在半秒内把五件东西挪来挪去
+        this.loadoutTask = Bukkit.getScheduler().runTaskTimer(this,
+                () -> shop.getCategories().tickAll(), 40L, 20L);
 
         getLogger().info("WBDTeamDeathmatch 已加载。");
     }

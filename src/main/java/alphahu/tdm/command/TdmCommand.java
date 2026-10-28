@@ -59,7 +59,7 @@ public class TdmCommand implements CommandExecutor, TabCompleter {
 
     private static final List<String> SUB_COMMANDS = Arrays.asList(
             "help", "list", "join", "leave", "status", "shop",
-            "shopedit", "enable", "disable", "start", "stop", "reload", "import");
+            "shopedit", "shopids", "enable", "disable", "start", "stop", "reload", "import");
 
     private final WBDTeamDeathmatch plugin;
 
@@ -82,6 +82,7 @@ public class TdmCommand implements CommandExecutor, TabCompleter {
             case "leave" -> handleLeave(sender);
             case "status" -> sendStatus(sender, args);
             case "shop" -> handleShop(sender, args);
+            case "shopids" -> handleShopIds(sender);
             case "shopedit" -> handleShopEdit(sender, args);
             case "enable" -> handleToggle(sender, args, true);
             case "disable" -> handleToggle(sender, args, false);
@@ -122,6 +123,7 @@ public class TdmCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(color("&e/tdm start|stop [场地] &7- 强制开始 / 结束比赛"));
             sender.sendMessage(color("&e/tdm season [reset] &7- 查看赛季剩余天数 / 手动软重置"));
             sender.sendMessage(color("&e/tdm reload &7- 重载配置与竞技场"));
+            sender.sendMessage(color("&e/tdm shopids &7- 列出商品 id 与推断类别（贴进 item-categories.yml）"));
         }
         sender.sendMessage(color("&6==================================="));
     }
@@ -285,6 +287,30 @@ public class TdmCommand implements CommandExecutor, TabCompleter {
      * <p>用法：{@code /tdm shopedit} 编辑公共商城，{@code /tdm shopedit T} 编辑 T 方，
      * 末尾可再加页码。
      */
+    /**
+     * {@code /tdm shopids}：把商店里的商品 id 连同推断出的类别打出来，
+     * 方便直接粘进 item-categories.yml 的 ids 段。
+     */
+    private void handleShopIds(CommandSender sender) {
+        var items = plugin.getShop().allItems();
+        if (items.isEmpty()) {
+            sender.sendMessage(color("&c商店里没有商品。"));
+            return;
+        }
+        sender.sendMessage(color("&e共 " + items.size() + " 件商品（类别是按材质推断的，按需改）："));
+        sender.sendMessage(color("&8ids:"));
+        for (var item : items) {
+            var categories = plugin.getShop().getCategories();
+            var category = categories.classify(item);
+            String key = category == alphahu.tdm.shop.LoadoutCategories.Category.NONE
+                    ? "?" : category.key();
+            String gunId = item.give() == null ? null : categories.gunId(item.give());
+            sender.sendMessage(color("&8  " + item.id() + ": &f" + key
+                    + (gunId == null ? "" : " &8(" + gunId + ")")));
+        }
+        sender.sendMessage(color("&7粘进 plugins/WBDTeamDeathmatch/item-categories.yml 后 &f/tdm reload&7。"));
+    }
+
     private void handleShopEdit(CommandSender sender, String[] args) {
         if (!requireAdmin(sender)) {
             return;

@@ -20,6 +20,16 @@ WBDTDM-1.2.1-a4cbeed-20260926-1745.jar
 - 离场快照还原：位置、背包、最大血量、游戏模式全部还原，不把比赛状态带回大厅
 - 竞技场边界限制与越界拉回
 
+### 装备分类与落点
+
+- 新增 `item-categories.yml`：按**商品 id / 材质 / 显示名 / 模组类型**归类，类别
+  `primary` / `secondary` / `melee` / `throwable` / `attachment` / `utility`
+- 落点、限购、同类替换（`on-buy: replace`）都按类别走，`give-slot` 只在没有分类时兜底
+- **预留格**：被分类占用的快捷栏格子不许放别的东西，杂物会被挪走（没空位再进背包）
+- 配件默认 `to-backpack: true`，买到直接进背包 9-35，不占快捷栏
+- 归位任务每秒一次，只作用于比赛中的玩家
+- 格式与 WBDAddon 的 `item-categories.yml` 对齐，两边可以共用同一套分类思路
+
 ### 场地与配置
 
 - 场地格式与 WarZBombDefuse **完全一致**（`world,x,y,z,yaw,pitch`），可直接从 WBD 导入

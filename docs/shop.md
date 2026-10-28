@@ -26,6 +26,40 @@ shop:
 
 ---
 
+## 分类与落点（`item-categories.yml`）
+
+落点规则现在由**分类**决定，不再只看 `give-slot`。首次启动会释放
+`plugins/WBDTeamDeathmatch/item-categories.yml`，格式与 WBDAddon 那份对齐。
+
+```yaml
+ids:              # 商品 id -> 类别（优先级最高）
+  ak47: primary
+materials:        # Bukkit 材质 -> 类别（背包里的物品也认）
+  TACZ_ATTACHMENT: attachment
+names:            # 显示名 -> 类别（忽略颜色）
+  "AK-47": primary
+
+categories:
+  primary:    { enabled: true, slot: 0, limit: 1, on-buy: replace }
+  secondary:  { enabled: true, slot: 1, limit: 1, on-buy: replace }
+  melee:      { enabled: true, slot: 2, limit: 1, on-buy: replace }
+  throwable:  { enabled: true, slot: 3, limit: 0 }      # 0 = 不限
+  attachment: { enabled: true, to-backpack: true }      # 直接进背包
+  utility:    { enabled: true, slots: [5, 6] }          # 拆弹器、医疗包
+```
+
+规则：
+
+- **落点**：分类写了 `slot` 就以它为准，`give-slot` 只能在没有分类时兜底
+- **限购**：`limit > 0` 时买超了直接拦下，**钱不会扣**
+- **同类替换**：`on-buy: replace`（默认）表示买第二把手枪会把第一把清掉，不管它躺在哪一格
+- **预留格**：上面这些格子只放对应类别；泥土、面包、别人掉的枪会被挪到没被预留的格子，没空位再进背包 9-35
+- **配件**：`to-backpack: true` 的类别买到就直接进背包，不占快捷栏
+
+归位任务每秒跑一次，只对**比赛中**的玩家生效，不会动大厅里的人。
+
+---
+
 ## 物品数据（`bukkit-object:`）
 
 商品的 `give-data` 字段里是 WarZBombDefuse 编辑器生成的完整物品数据：

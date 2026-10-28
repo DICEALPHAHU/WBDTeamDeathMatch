@@ -181,10 +181,18 @@ public final class ShopService {
      */
     private final NamespacedKey groupKey;
 
+    /** 商品分类（落点、限购、预留格）。 */
+    private final LoadoutCategories categories;
+
     public ShopService(WBDTeamDeathmatch plugin) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
         this.groupKey = new NamespacedKey(plugin, "shop_group");
+        this.categories = new LoadoutCategories(plugin);
+    }
+
+    public LoadoutCategories getCategories() {
+        return categories;
     }
 
     // ------------------------------------------------------------------
@@ -250,6 +258,7 @@ public final class ShopService {
         if (loadedFile != null) {
             load(loadedFile);
         }
+        categories.reload();
     }
 
     // ------------------------------------------------------------------
@@ -419,12 +428,13 @@ public final class ShopService {
         }
     }
 
-    /** 全部商品（公共 + 阵营专属），用于统计。 */
-    private List<ShopItem> allItems() {
+    /** 全部商品（公共 + 阵营专属），统计与 /tdm shopids 都用它。 */
+    public List<ShopItem> allItems() {
         List<ShopItem> out = new ArrayList<>(commonItems);
         for (TeamShop shop : teamShops.values()) {
             out.addAll(shop.items());
         }
+        out.sort(java.util.Comparator.comparing(ShopItem::id));
         return out;
     }
 
@@ -872,6 +882,11 @@ public final class ShopService {
             return;
         }
 
+        // 限购先拦，钱还没扣，干净
+        if (!categories.allowPurchase(player, item)) {
+            return;
+        }
+
         // 扣钱。经济关掉（或商品价格为 0）时这整段跳过
         TdmMatch match = plugin.getMatchManager().getMatch(player);
         TdmPlayer record = match == null ? null : match.getPlayer(player);
@@ -929,7 +944,7 @@ public final class ShopService {
             if (plugin.getSettings().shopTagGrantedItems) {
                 tagGroup(stack, group);
             }
-            inventory.setItem(slot, stack);
+            categories.place(player, inventory, stack, categories.classify(item), slot);
         }
 
         runCommands(player, item);
@@ -1031,6 +1046,11 @@ public final class ShopService {
      * 那份配置的前提下覆盖它。
      */
     private int resolveSlot(ShopItem item) {
+        // 分类有明确落点就用它；没有才回去看商店配置的 override / give-slot
+        int byCategory = categories.slotFor(categories.classify(item));
+        if (byCategory >= 0) {
+            return byCategory;
+        }
         Integer override = plugin.getSettings().shopSlotOverrides.get(item.id());
         if (override != null) {
             return override;
@@ -1058,6 +1078,12 @@ public final class ShopService {
      * 而没配 give-slot 的商品仍走材质分组兜底，行为不变。
      */
     private String groupKeyOf(ShopItem item) {
+        LoadoutCategories.Category category = categories.classify(item);
+        // 同一类别的商品共用一组：买第二把手枪会把第一把清掉，
+        // 而不是因为它落在别的格子就并排躺着
+        if (category != LoadoutCategories.Category.NONE) {
+            return "cat:" + category.key();
+        }
         return "slot:" + resolveSlot(item);
     }
 
