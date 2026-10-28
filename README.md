@@ -188,11 +188,16 @@ mvn -B clean package
 产物命名：
 
 ```
-WBDTDM-<版本>-<内部构建号>-<git短哈希>-<时间戳>.jar
-例：WBDTDM-1.2.2-1-027236f-20261028-1420.jar
+WBDTDM-<对外版本>-<内部版本>-<git短哈希>-<时间戳>.jar
+例：WBDTDM-1.2.2-1.2.2-07e4b71-20261028-1428.jar
 ```
 
-内部构建号每次构建自增，记录在仓库根目录的 `buildNumber.properties`（已在 `.gitignore` 里，不入库）。
+两个版本号分工明确：
+
+| 版本 | 来源 | 用途 |
+|---|---|---|
+| **对外版本** | `public-version.txt` | 玩家看到的：`plugin.yml` 的 `version`、`/plugins` 列表、发布帖 |
+| **内部版本** | `pom.xml` 的 `<version>` | 每次更新自增，只体现在产物文件名与 `git.properties` 里 |
 
 ---
 

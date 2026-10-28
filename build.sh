@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # 不依赖 Maven 的构建脚本：javac --release 17 + jar
 #
-# 产物：target/WBDTDM-<版本>-<内部构建号>-<git短哈希>-<时间戳>.jar
-# 内部构建号每次自增，存在 buildNumber.properties（已 gitignore）。
+# 两个版本号：
+#   对外版本 public-version.txt（玩家看到的，写进 plugin.yml）
+#   内部版本 pom.xml 的 <version>（每次更新自增，只在产物名里体现）
+#
+# 产物：target/WBDTDM-<对外>-<内部>-<git短哈希>-<时间戳>.jar
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -40,17 +43,15 @@ javac --release 17 -encoding UTF-8 -nowarn -cp "$CP" -d "$OUT/classes" "@$OUT/so
 
 cp -r "$REPO/src/main/resources/." "$OUT/classes/"
 
-VERSION=$(grep -m1 '<version>' "$REPO/pom.xml" | sed 's/.*<version>\(.*\)<\/version>.*/\1/')
+PUBLIC=$(tr -d '[:space:]' < "$REPO/public-version.txt")
+INTERNAL=$(grep -m1 '<version>' "$REPO/pom.xml" | sed 's/.*<version>\(.*\)<\/version>.*/\1/')
 SHA=$(git -C "$REPO" rev-parse --short HEAD 2>/dev/null || echo nogit)
 STAMP=$(date +%Y%m%d-%H%M)
 
-BUILD_FILE="$REPO/buildNumber.properties"
-BUILD=$(sed -n 's/^buildNumber=//p' "$BUILD_FILE" 2>/dev/null | head -1)
-BUILD=$((${BUILD:-0} + 1))
-printf 'buildNumber=%s\n' "$BUILD" > "$BUILD_FILE"
+sed -i "s/\${project.version}/$PUBLIC/" "$OUT/classes/plugin.yml"
+printf 'git.commit.id.abbrev=%s\ngit.build.time=%s\nversion.public=%s\nversion.internal=%s\n' \
+  "$SHA" "$STAMP" "$PUBLIC" "$INTERNAL" > "$OUT/classes/git.properties"
 
-sed -i "s/\${project.version}/$VERSION/" "$OUT/classes/plugin.yml"
-
-JAR="$REPO/target/WBDTDM-$VERSION-$BUILD-$SHA-$STAMP.jar"
+JAR="$REPO/target/WBDTDM-$PUBLIC-$INTERNAL-$SHA-$STAMP.jar"
 ( cd "$OUT/classes" && jar --create --file "$JAR" . )
-echo "已构建：$JAR"
+echo "已构建：$JAR（对外 $PUBLIC / 内部 $INTERNAL）"

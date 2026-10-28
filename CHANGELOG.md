@@ -35,8 +35,9 @@ WBDTDM-<版本>-<内部构建号>-<git短哈希>-<时间戳>.jar
 
 ### 构建
 
-- 新增 `build.sh`：不依赖 Maven 的 javac 构建，产物名带内部构建号
-- 产物命名统一为 `WBDTDM-<版本>-<内部构建号>-<git短哈希>-<时间戳>.jar`
+- 新增 `build.sh`：不依赖 Maven 的 javac 构建
+- 版本拆成两个：**对外版本**（`public-version.txt`，写进 plugin.yml）与**内部版本**（`pom.xml`，只在产物名里）
+- 产物命名统一为 `WBDTDM-<对外版本>-<内部版本>-<git短哈希>-<时间戳>.jar`
 
 ### 比赛与玩法
 
