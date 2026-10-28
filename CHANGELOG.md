@@ -1,14 +1,42 @@
 # 变更记录
 
-本项目遵循[语义化版本](https://semver.org/lang/zh-CN/)。产物文件名里的 git 短哈希与构建时间戳由 Maven 自动追加，例如：
+本项目遵循[语义化版本](https://semver.org/lang/zh-CN/)。产物文件名格式：
 
 ```
-WBDTDM-1.2.1-a4cbeed-20260926-1745.jar
+WBDTDM-<版本>-<内部构建号>-<git短哈希>-<时间戳>.jar
+例：WBDTDM-1.2.2-1-027236f-20261028-1420.jar
 ```
 
-## [1.2.1] — 未发布
+内部构建号每次构建自增，记录在 `buildNumber.properties`（不入库）。
+
+## [1.2.2] — 未发布
 
 首个完整版本。以下按模块列出能力，括注的是实现时踩过并已修复的坑。
+
+### 装备分类与落点
+
+- 新增 `item-categories.yml`：按**商品 id / TacZ GunId / 材质 / 显示名**归类，类别 `primary` / `secondary` / `melee` / `throwable` / `attachment` / `utility`
+- 落点、限购（`limit`）、同类替换（`on-buy`）都按类别走，`give-slot` 只在没有分类时兜底
+- **预留格**：被分类占用的快捷栏格子不许放别的东西，杂物会被挪走（没空位再进背包）
+- 配件默认 `to-backpack: true`，买到直接进背包 9-35，不占快捷栏
+- 归位任务每秒一次，只作用于比赛中的玩家
+- 装了 WBDAddon 时自动继承它的 `guns` / `names` 表，**本地配置优先**
+- 装了 TacZ 桥接时按 GunId 分类；表里没有的枪**不接管**，保持原落点
+
+### 武器显示名
+
+- 新增 `weapon-names.yml`：GunId → 显示名，击杀播报与 HUD 使用
+- 优先级**本插件优先**：本地表 → WBDAddon 的表（补缺）→ 物品显示名 → GunId
+- 装了 TacZ 桥接时模板会列出全部 GunId，照着填即可
+
+### 命令
+
+- 新增 `/tdm shopids`：列出商品 id、推断类别与 GunId，方便填 `item-categories.yml`
+
+### 构建
+
+- 新增 `build.sh`：不依赖 Maven 的 javac 构建，产物名带内部构建号
+- 产物命名统一为 `WBDTDM-<版本>-<内部构建号>-<git短哈希>-<时间戳>.jar`
 
 ### 比赛与玩法
 
