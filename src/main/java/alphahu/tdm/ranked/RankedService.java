@@ -251,7 +251,23 @@ public final class RankedService {
             placement = 0;
             entryFee = 0;
         } else {
-            placement = draw ? settings.rpDraw : (win ? settings.rpWin : settings.rpLoss);
+            // 名次分可以先按段位覆盖：低段位「赢得多、输得少」才爬得出去。
+            // 覆盖只写一部分时，没写的仍用 scoring.placement 的全局值。
+            int winRp = settings.rpWin;
+            int drawRp = settings.rpDraw;
+            int lossRp = settings.rpLoss;
+            if (tierBefore != null && tierBefore.hasPlacementOverride()) {
+                if (tierBefore.winRp() != null) {
+                    winRp = tierBefore.winRp();
+                }
+                if (tierBefore.drawRp() != null) {
+                    drawRp = tierBefore.drawRp();
+                }
+                if (tierBefore.lossRp() != null) {
+                    lossRp = tierBefore.lossRp();
+                }
+            }
+            placement = draw ? drawRp : (win ? winRp : lossRp);
             margin = marginFor(record, match, target);
             teamPlace = teamPlacementFor(record, match);
             entryFee = settings.entryFeeFor(rpBefore);

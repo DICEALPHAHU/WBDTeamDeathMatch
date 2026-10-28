@@ -41,6 +41,11 @@ season:
 #   entry-fee  入场费。每局开始先扣这么多，段位越高越贵 ——
 #              这是排位系统的核心压力：高段位必须维持胜率才不掉下去，
 #              否则谁都能靠堆场次磨上去。
+#   placement  可选。按段位覆盖名次分（win / draw / loss），不写则用
+#              scoring.placement 的全局值。只写其中几项也可以。
+#              低段位需要「赢得多、输得少」才爬得出去：全局的 120 / -60 是
+#              给白银以上用的，新手按这套打，40% 胜率下每场净赚不到 10 分，
+#              一个段位要磨四十多场。
 tiers:
   - id: rookie
     name: "菜鸟"
@@ -49,6 +54,11 @@ tiers:
     max-rp: 999
     sub-tiers: 4
     entry-fee: 0
+    # 新手区：赢给足、输几乎不疼，让人先爬出 0-999 再谈强度
+    placement:
+      win: 200
+      draw: 50
+      loss: -10
 
   - id: bronze
     name: "青铜"
@@ -57,6 +67,11 @@ tiers:
     max-rp: 1999
     sub-tiers: 4
     entry-fee: 0
+    # 过渡区：输的惩罚开始变重，但仍明显轻于白银
+    placement:
+      win: 170
+      draw: 40
+      loss: -25
 
   - id: silver
     name: "白银"

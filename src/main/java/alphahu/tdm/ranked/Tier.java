@@ -13,10 +13,30 @@ package alphahu.tdm.ranked;
  * @param maxRp     本段位的最高 RP（含）
  * @param subTiers  小段数量；4 表示 IV/III/II/I，0 表示无小段
  * @param entryFee  入场费，每局开始先扣
+ * @param winRp     本段位覆盖的「赢」名次分；null 表示用 {@code scoring.placement.win}
+ * @param drawRp    本段位覆盖的「平」名次分；null 表示用全局值
+ * @param lossRp    本段位覆盖的「输」名次分；null 表示用全局值
  * @author AlphaHu
  */
 public record Tier(String id, String name, String color, int minRp, int maxRp,
-                   int subTiers, int entryFee) {
+                   int subTiers, int entryFee,
+                   Integer winRp, Integer drawRp, Integer lossRp) {
+
+    /** 不按段位覆盖名次分时的构造器（全部走全局值）。 */
+    public Tier(String id, String name, String color, int minRp, int maxRp,
+                int subTiers, int entryFee) {
+        this(id, name, color, minRp, maxRp, subTiers, entryFee, null, null, null);
+    }
+
+    /**
+     * 本段位是否自己定义了名次分。
+     *
+     * <p>用途：低段位需要「赢得多、输得少」才爬得出去，高段位要维持原强度。
+     * 三个值可以只写一部分，没写的仍用全局值。
+     */
+    public boolean hasPlacementOverride() {
+        return winRp != null || drawRp != null || lossRp != null;
+    }
 
     /** 小段数量为 4 时使用的罗马数字，索引 0 是最低小段。 */
     private static final String[] ROMAN = {"IV", "III", "II", "I"};

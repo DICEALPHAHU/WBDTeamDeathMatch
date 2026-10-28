@@ -69,6 +69,11 @@ public final class RankedSettings {
         int softResetBase = Math.max(0, c.getInt("season.soft-reset-base", 2000));
         int currentSeason = Math.max(1, c.getInt("season.current", 1));
 
+        // 名次分先解析：下面的段位表要拿它当「没写覆盖时的兜底」
+        int rpWin = c.getInt("scoring.placement.win", 120);
+        int rpDraw = c.getInt("scoring.placement.draw", 30);
+        int rpLoss = c.getInt("scoring.placement.loss", -60);
+
         List<Tier> tiers = new ArrayList<>();
         List<?> rawTiers = c.getList("tiers");
         if (rawTiers != null) {
@@ -83,13 +88,28 @@ public final class RankedSettings {
                 int maxRp = intOf(map.get("max-rp"), minRp + 999);
                 int subTiers = Math.max(0, intOf(map.get("sub-tiers"), 4));
                 int entryFee = Math.max(0, intOf(map.get("entry-fee"), 0));
-                tiers.add(new Tier(id, name, color, minRp, maxRp, subTiers, entryFee));
+
+                // 可选的按段位覆盖：低段位「赢得多、输得少」才爬得出去。
+                // 只写其中几项也可以，没写的继续用 scoring.placement 的全局值。
+                Integer winRp = null;
+                Integer drawRp = null;
+                Integer lossRp = null;
+                if (map.get("placement") instanceof java.util.Map<?, ?> pm) {
+                    if (pm.containsKey("win")) {
+                        winRp = intOf(pm.get("win"), rpWin);
+                    }
+                    if (pm.containsKey("draw")) {
+                        drawRp = intOf(pm.get("draw"), rpDraw);
+                    }
+                    if (pm.containsKey("loss")) {
+                        lossRp = intOf(pm.get("loss"), rpLoss);
+                    }
+                }
+                tiers.add(new Tier(id, name, color, minRp, maxRp, subTiers, entryFee,
+                        winRp, drawRp, lossRp));
             }
         }
 
-        int rpWin = c.getInt("scoring.placement.win", 120);
-        int rpDraw = c.getInt("scoring.placement.draw", 30);
-        int rpLoss = c.getInt("scoring.placement.loss", -60);
         int marginWeight = Math.max(0, c.getInt("scoring.margin-weight", 25));
         int killPoints = Math.max(0, c.getInt("scoring.kill-points", 6));
         int killCap = Math.max(0, c.getInt("scoring.kill-cap", 10));
