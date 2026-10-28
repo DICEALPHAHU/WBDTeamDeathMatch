@@ -18,6 +18,7 @@ import alphahu.tdm.report.ReportService;
 import alphahu.tdm.shop.ShopEditor;
 import alphahu.tdm.shop.ShopListener;
 import alphahu.tdm.shop.ShopService;
+import alphahu.tdm.util.WeaponNames;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -62,6 +63,8 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
     private ReportService reports;
     private SkinService skins;
     private TeamUniformService uniform;
+    /** 武器显示名（本地优先，WBDAddon 兜底）。 */
+    private WeaponNames weaponNames;
 
     /** 比赛主循环任务。 */
     private BukkitTask tickTask;
@@ -179,6 +182,7 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
         this.loadout = new LoadoutService(this, settings, getLogger());
         this.shop = new ShopService(this);
         loadShop();
+        this.weaponNames = new WeaponNames(this);
 
         // 2.5 消息文案与段位。段位要在比赛开始前装好 —— 公告一开场就会
         //     去问段位显示名，那时它必须已经能回答（哪怕是「未定级」）
@@ -393,6 +397,7 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
         this.settings = TdmSettings.load(getConfig());
         this.loadout = new LoadoutService(this, settings, getLogger());
         loadShop();
+        this.weaponNames = new WeaponNames(this);
 
         // 消息文案与段位设置也跟着重载。漏掉这两行的后果是「改了
         // messages.yml 或 season.yml 必须重启才生效」，而 /tdm reload
@@ -505,9 +510,29 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
         return addonBridge != null && addonBridge.isHudRelayed();
     }
 
-    /** 解析武器显示名，优先用 WBDAddon 的实现（能认 TacZ 枪械）。 */
+    /**
+     * 解析武器显示名。
+     *
+     * <p>优先级：**本插件的 weapon-names.yml** → WBDAddon 的解析结果 → 未知。
+     * 两边都装着时以这边为准，改本插件那份就能立刻看到效果，
+     * 不会被 WBDAddon 的旧表盖回去。
+     */
     public String resolveWeaponName(Player killer) {
+        if (weaponNames != null && killer != null) {
+            var stack = killer.getInventory().getItemInMainHand();
+            String gunId = weaponNames.gunIdOf(stack);
+            if (gunId != null) {
+                String local = weaponNames.resolve(stack);
+                if (local != null && !"未知".equals(local)) {
+                    return local;
+                }
+            }
+        }
         return addonBridge == null ? "未知" : addonBridge.resolveWeaponName(killer);
+    }
+
+    public WeaponNames getWeaponNames() {
+        return weaponNames;
     }
 
     // ------------------------------------------------------------------

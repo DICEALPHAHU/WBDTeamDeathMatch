@@ -60,6 +60,28 @@ categories:
 
 ---
 
+## 武器显示名（`weapon-names.yml`）
+
+击杀播报里写「twx:twx_kcb」没人看得懂，所以有一份对照表：
+
+```yaml
+items:
+  twx:twx_kcb: 克莱伯狙击枪
+  tacz:ak47: AK-47
+```
+
+优先级（**本插件优先**）：
+
+1. 本插件 `weapon-names.yml`
+2. WBDAddon 的 `weapon-names.yml`（只补本地没有的键，`weapon-names.inherit-wbdaddon: false` 可关）
+3. 物品自己的显示名
+4. GunId 的可读形式（`twx_kcb` → `twx kcb`）
+
+首次启动会生成模板，装了 TacZ 桥接时模板里会列出全部 GunId（注释形式），照着改即可。
+`/tdm reload` 生效。
+
+---
+
 ## 物品数据（`bukkit-object:`）
 
 商品的 `give-data` 字段里是 WarZBombDefuse 编辑器生成的完整物品数据：

@@ -245,19 +245,32 @@ public final class LoadoutCategories {
         if (!source.isFile()) return;
         try {
             YamlConfiguration other = YamlConfiguration.loadConfiguration(source);
-            ConfigurationSection section = other.getConfigurationSection("guns");
-            if (section == null) return;
             int added = 0;
-            for (String gunId : section.getKeys(false)) {
-                String key = gunId.trim().toLowerCase(Locale.ROOT);
-                if (guns.containsKey(key)) continue;
-                Category category = Category.parse(section.getString(gunId));
-                if (category == null || category == Category.NONE) continue;
-                guns.put(key, category);
-                added++;
+            ConfigurationSection gunSection = other.getConfigurationSection("guns");
+            if (gunSection != null) {
+                for (String gunId : gunSection.getKeys(false)) {
+                    String key = gunId.trim().toLowerCase(Locale.ROOT);
+                    if (guns.containsKey(key)) continue;
+                    Category category = Category.parse(gunSection.getString(gunId));
+                    if (category == null || category == Category.NONE) continue;
+                    guns.put(key, category);
+                    added++;
+                }
+            }
+            // 名称表也接过来：对面已经按中文名标好的分类，这边不用再抄一遍
+            ConfigurationSection nameSection = other.getConfigurationSection("names");
+            if (nameSection != null) {
+                for (String raw : nameSection.getKeys(false)) {
+                    String key = raw.trim().toLowerCase(Locale.ROOT);
+                    if (names.containsKey(key)) continue;
+                    Category category = Category.parse(nameSection.getString(raw));
+                    if (category == null || category == Category.NONE) continue;
+                    names.put(key, category);
+                    added++;
+                }
             }
             if (added > 0) {
-                plugin.getLogger().info("已从 WBDAddon 继承 " + added + " 条枪械分类。");
+                plugin.getLogger().info("已从 WBDAddon 继承 " + added + " 条分类（枪械 / 名称）。");
             }
         } catch (Throwable t) {
             plugin.getLogger().warning("读取 WBDAddon 的 item-categories.yml 失败：" + t);
