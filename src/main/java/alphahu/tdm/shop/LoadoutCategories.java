@@ -472,6 +472,16 @@ public final class LoadoutCategories {
         int owned = count(player, category);
         if (owned < limit) return true;
 
+        // 已经到上限，但这一类是「买新的替换旧的」时仍然放行：
+        // 放置前会先清掉同类旧物，买完还是 limit 件，不会超。
+        //
+        // 这里原先一律拒绝，后果是「手上有一把枪就再也买不了枪」——
+        // 而战斗中又不能丢弃（combat.prevent-item-drop），换枪的路彻底堵死。
+        // 真正会超限的是投背包的类别（to-backpack），那里没有替换逻辑，继续拦。
+        if (!toBackpack(category) && replaceOnBuy.getOrDefault(category, true)) {
+            return true;
+        }
+
         player.sendMessage(Text.color("&c你最多只能携带 &e" + limit + " &c件"
                 + category.displayName() + "。"));
         return false;
