@@ -931,17 +931,27 @@ public final class ShopService {
         int slot = resolveSlot(item);
         String group = groupKeyOf(item);
 
+        // 投背包的类别（配件）不能按「落点组」清旧物。
+        //
+        // 它们本来就是越买越多、各占一格；而所有配件算出来的落点都是同一个
+        // （材质相同、没有单独的 give-slot），于是清旧物等于第二件把第一件顶掉 ——
+        // 表现就是「配件永远只有一件，而且总在背包第一格」。
+        boolean backpack = categories.toBackpack(categories.classify(item));
+
         // 先清掉背包里本组的所有商店物品，**再**放新的。
         // 只覆盖落点那一格是不够的 —— 玩家把买到的东西往背包里一挪，那一格就空了，
         // 再买一次新的进来，旧的还躺在别处，几次下来就是一背包枪。
-        purgeGroup(inventory, group);
+        if (!backpack) {
+            purgeGroup(inventory, group);
+        }
 
         if (item.give() != null) {
             ItemStack stack = item.give().clone();
             // 标记是可关的：给物品写一个 PDC 标记，能让「再买同组的自动换掉旧的」
             // 生效；但它确实动了物品的 ItemMeta。想追求「发出去的和配置里存的
             // 一字不差」就把 shop.tag-granted-items 关掉，代价是只能覆盖目标槽位。
-            if (plugin.getSettings().shopTagGrantedItems) {
+            // 配件不打这个标记：打了之后买一把落在同组的枪会顺手把它们全清掉。
+            if (plugin.getSettings().shopTagGrantedItems && !backpack) {
                 tagGroup(stack, group);
             }
             categories.place(player, inventory, stack, categories.classify(item), slot);
