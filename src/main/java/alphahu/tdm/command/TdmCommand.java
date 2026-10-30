@@ -3,6 +3,7 @@ package alphahu.tdm.command;
 import alphahu.tdm.WBDTeamDeathmatch;
 import alphahu.tdm.arena.ArenaLoader;
 import alphahu.tdm.arena.TdmArena;
+import alphahu.tdm.game.MatchManager;
 import alphahu.tdm.game.MatchState;
 import alphahu.tdm.game.TdmMatch;
 import alphahu.tdm.game.TdmTeam;
@@ -59,7 +60,8 @@ public class TdmCommand implements CommandExecutor, TabCompleter {
 
     private static final List<String> SUB_COMMANDS = Arrays.asList(
             "help", "list", "join", "leave", "status", "shop",
-            "shopedit", "shopids", "enable", "disable", "start", "stop", "reload", "import");
+            "shopedit", "shopids", "enable", "disable", "start", "stop", "reload", "import",
+            "maintenance");
 
     private final WBDTeamDeathmatch plugin;
 
@@ -88,6 +90,7 @@ public class TdmCommand implements CommandExecutor, TabCompleter {
             case "disable" -> handleToggle(sender, args, false);
             case "start" -> handleStart(sender, args);
             case "stop" -> handleStop(sender, args);
+            case "maintenance" -> handleMaintenance(sender, args);
             case "reload" -> handleReload(sender);
             case "import" -> handleImport(sender, args);
             case "delete" -> handleDelete(sender, args);
@@ -121,6 +124,7 @@ public class TdmCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(color("&e/tdm delete <场地id> &7- 删除一个死斗场地（不动 WBD 那边）"));
             sender.sendMessage(color("&e/tdm exportitem &7- 把手持物品导出成能贴进 config.yml 的物品数据"));
             sender.sendMessage(color("&e/tdm start|stop [场地] &7- 强制开始 / 结束比赛"));
+            sender.sendMessage(color("&e/tdm maintenance [on|off] &7- 维护模式：单人开局、不结算段位"));
             sender.sendMessage(color("&e/tdm season [reset] &7- 查看赛季剩余天数 / 手动软重置"));
             sender.sendMessage(color("&e/tdm reload &7- 重载配置与竞技场"));
             sender.sendMessage(color("&e/tdm shopids &7- 列出商品 id 与推断类别（贴进 item-categories.yml）"));
@@ -594,6 +598,45 @@ public class TdmCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(color(error != null ? error : "&a已强制结束比赛。"));
     }
 
+    /**
+     * {@code /tdm maintenance [on|off]} —— 维护模式。
+     *
+     * <p>做三件事，目的都是「让一个人能安静地测场地 / 试枪」：
+     * <ol>
+     *   <li>开局门槛从 {@code min-players} 降到 <b>1 人</b></li>
+     *   <li>不再因为「对面一个人都没有」而自动判负 —— 那是维护模式的常态
+     *       （WBDAddon 那边靠往空队塞一条幽灵记录来骗过人数检查，本插件自己就是
+     *       规则制定者，不必绕那一圈）</li>
+     *   <li>结束时不结算段位、不写战报 —— 一个人在里面刷满击杀会污染真实排名</li>
+     * </ol>
+     *
+     * <p>开关只存内存，重启即失效：免得哪次维护忘了关，服务器就带着
+     * 「一人开局、不记段位」的规则默默跑下去。
+     */
+    private void handleMaintenance(CommandSender sender, String[] args) {
+        if (!requireAdmin(sender)) return;
+
+        MatchManager manager = plugin.getMatchManager();
+        boolean on;
+        if (args.length < 2) {
+            on = !manager.isMaintenance();
+        } else {
+            String raw = args[1].toLowerCase(java.util.Locale.ROOT);
+            if (!raw.equals("on") && !raw.equals("off")) {
+                sender.sendMessage(color("&c用法：/tdm maintenance [on|off]"));
+                return;
+            }
+            on = raw.equals("on");
+        }
+
+        manager.setMaintenance(on);
+        sender.sendMessage(color(on
+                ? "&a维护模式已开启：&7单人即可开局；不因对面没人自动判负；不结算段位与战报。"
+                : "&e维护模式已关闭：&7恢复常规人数门槛与段位结算。"));
+        plugin.getLogger().info("维护模式已" + (on ? "开启" : "关闭")
+                + "（操作者：" + sender.getName() + "）");
+    }
+
     private void handleReload(CommandSender sender) {
         if (!requireAdmin(sender)) return;
         try {
@@ -1060,6 +1103,9 @@ public class TdmCommand implements CommandExecutor, TabCompleter {
         if (args.length == 3 && sub.equals("join")) {
             return filter(java.util.stream.Stream.of("t", "ct"), args[2]);
         }
+        if (args.length == 2 && sub.equals("maintenance")) {
+            return filter(java.util.stream.Stream.of("on", "off"), args[1]);
+        }
         if (args.length == 2 && sub.equals("shop")) {
             return filter(java.util.stream.Stream.of("adopt"), args[1]);
         }
@@ -1071,6 +1117,7 @@ public class TdmCommand implements CommandExecutor, TabCompleter {
 
     private boolean isAdminOnly(String sub) {
         return sub.equals("start") || sub.equals("stop") || sub.equals("reload")
+                || sub.equals("maintenance")
                 || sub.equals("import") || sub.equals("delete")
                 || sub.equals("enable") || sub.equals("disable")
                 || sub.equals("shopedit") || sub.equals("exportitem");

@@ -32,8 +32,24 @@ public final class MatchManager {
     /** 场地 id → 比赛实例。 */
     private final Map<String, TdmMatch> matches = new LinkedHashMap<>();
 
+    /**
+     * 维护模式：单人也能开局，且不结算段位、不因为对面没人自动判负。
+     *
+     * <p>开关由 {@code /tdm maintenance} 控制，只存内存、重启即失效 ——
+     * 免得某次维护忘了关，服务器就带着「一人开局」的规则默默跑下去。
+     */
+    private boolean maintenance;
+
     public MatchManager(WBDTeamDeathmatch plugin) {
         this.plugin = plugin;
+    }
+
+    public boolean isMaintenance() {
+        return maintenance;
+    }
+
+    public void setMaintenance(boolean value) {
+        this.maintenance = value;
     }
 
     // ------------------------------------------------------------------

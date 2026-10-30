@@ -358,7 +358,7 @@ public final class TdmMatch {
         //
         // 掉线也走这条路径（quit → leave），这是刻意的：否则拔网线
         // 就成了逃避败场的标准操作
-        if (state == MatchState.LIVE && !clearing) {
+        if (state == MatchState.LIVE && !clearing && !maintenance()) {
             plugin.getRanked().penalizeLeave(record);
         }
 
@@ -383,6 +383,11 @@ public final class TdmMatch {
             resetToWaiting();
             return;
         }
+        // 维护模式本来就是「一个人在里面自测」，对面空着是常态，
+        // 这时候按人数判胜等于刚进去就被结算
+        if (maintenance()) {
+            return;
+        }
         // 只剩一方有人时，比赛没有继续的意义，直接按人数占优判胜
         // （这与爆破模式的「全灭即负」不同，是死斗特有的兜底）
         if (state == MatchState.LIVE) {
@@ -392,6 +397,17 @@ public final class TdmMatch {
                 endMatch(TdmTeam.T, "对手已全部离开");
             }
         }
+    }
+
+    /** 维护模式下开局门槛降到 1 人。 */
+    private int requiredPlayers() {
+        return maintenance() ? 1 : rules.minPlayers();
+    }
+
+    /** 当前是否处于维护模式（单人自测；由 {@code /tdm maintenance} 控制）。 */
+    private boolean maintenance() {
+        MatchManager manager = plugin.getMatchManager();
+        return manager != null && manager.isMaintenance();
     }
 
     /**
@@ -426,12 +442,12 @@ public final class TdmMatch {
 
         switch (state) {
             case WAITING -> {
-                if (players.size() >= rules.minPlayers()) {
+                if (players.size() >= requiredPlayers()) {
                     startCountdown(now);
                 }
             }
             case COUNTDOWN -> {
-                if (players.size() < rules.minPlayers()) {
+                if (players.size() < requiredPlayers()) {
                     broadcast("&c人数不足，已取消开局。");
                     resetToWaiting();
                 } else if (now >= stateEndsAt) {
@@ -440,7 +456,9 @@ public final class TdmMatch {
             }
             case LIVE -> {
                 enforceBoundary();
-                if (rules.hasTimeLimit() && now >= matchEndsAt) {
+                // 维护模式下不受时间上限约束：一个人在里面布置场地、试枪、量坐标，
+                // 到点被踢出去很烦。要结束就 /tdm stop。
+                if (!maintenance() && rules.hasTimeLimit() && now >= matchEndsAt) {
                     finishByTime();
                 }
             }
@@ -552,16 +570,24 @@ public final class TdmMatch {
         // restart() 会遍历玩家执行 resetForNewMatch()，把击杀、死亡、连杀
         // 全部清零 —— 晚一步就会变成「所有人按 0 击杀结算」，而且不报错，
         // 只表现为分数永远偏低。这是整套排位里最容易踩且最难查的一个顺序问题。
-        Map<UUID, RankOutcome> outcomes = plugin.getRanked().settle(this, team);
+        if (maintenance()) {
+            // 维护模式是拿来自测与布置场地的，场上往往只有一个人。
+            // 这种局写进段位库会污染真实排名（一个人刷满击杀、或者按 0 击杀结算），
+            // 所以整段结算与战报都跳过。
+            plugin.getLogger().info("场地 " + arena.getId()
+                    + " 维护模式下结束，已跳过段位结算与战报。");
+        } else {
+            Map<UUID, RankOutcome> outcomes = plugin.getRanked().settle(this, team);
 
-        // 战报同理，而且顺序不能反：它要带上本局的段位变化，
-        // 所以得等 settle 给出结果之后再落盘
-        plugin.getReports().save(this, outcomes);
+            // 战报同理，而且顺序不能反：它要带上本局的段位变化，
+            // 所以得等 settle 给出结果之后再落盘
+            plugin.getReports().save(this, outcomes);
 
-        // 同一份数据再写一份进数据库，供 /tdm matchrp 按玩家查询。
-        // 文件给人看，表给命令查 —— 命令若去扫 reports/ 目录解析 YAML，
-        // 几百份文件就是几百次磁盘 IO，玩家随手一敲就卡住了
-        plugin.getRanked().recordMatch(this, outcomes);
+            // 同一份数据再写一份进数据库，供 /tdm matchrp 按玩家查询。
+            // 文件给人看，表给命令查 —— 命令若去扫 reports/ 目录解析 YAML，
+            // 几百份文件就是几百次磁盘 IO，玩家随手一敲就卡住了
+            plugin.getRanked().recordMatch(this, outcomes);
+        }
     }
 
     /** 时间耗尽：击杀多者胜，相同则平局。 */
