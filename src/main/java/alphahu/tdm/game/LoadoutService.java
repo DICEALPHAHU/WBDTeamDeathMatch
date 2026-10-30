@@ -150,6 +150,11 @@ public final class LoadoutService {
         giveShopItem(player.getInventory());
 
         resetVitals(player);
+
+        // 复活补弹：TacZ 的「当前弹匣」存在物品 NBT 里，死亡不清背包就会原样带回来，
+        // 每次复活都得先换一次弹 —— 而复活延时本来就只有几秒，节奏会被完全拖住。
+        // 只在这里补、不在 apply() 补：进场发的是新枪，弹匣本来就是满的。
+        plugin.getMagazineRefill().refill(player);
         player.updateInventory();
 
         // 复活保留背包，队服正常还在；assertUniform 在「还在」时什么都不做，

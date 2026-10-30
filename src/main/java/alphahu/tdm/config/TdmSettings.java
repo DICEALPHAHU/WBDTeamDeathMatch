@@ -38,6 +38,8 @@ public final class TdmSettings {
     public final double protectionSeconds;
     public final boolean breakProtectionOnAttack;
     public final boolean dropItems;
+    /** 复活时是否把 TacZ 枪的弹匣补满（死亡不清背包，弹匣会跟着留下）。 */
+    public final boolean respawnRefillMagazine;
     /** {@code random} 或 {@code first}。 */
     public final String spawnMode;
 
@@ -160,6 +162,7 @@ public final class TdmSettings {
         this.protectionSeconds = Math.max(0.0, c.getDouble("respawn.protection-seconds", 2.0));
         this.breakProtectionOnAttack = c.getBoolean("respawn.break-protection-on-attack", true);
         this.dropItems = c.getBoolean("respawn.drop-items", false);
+        this.respawnRefillMagazine = c.getBoolean("respawn.refill-magazine", true);
         this.spawnMode = c.getString("respawn.spawn-mode", "random");
 
         this.friendlyFire = c.getBoolean("combat.friendly-fire", false);

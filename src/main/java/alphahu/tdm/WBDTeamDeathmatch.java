@@ -5,6 +5,7 @@ import alphahu.tdm.combat.CombatListener;
 import alphahu.tdm.command.TdmCommand;
 import alphahu.tdm.config.TdmSettings;
 import alphahu.tdm.game.LoadoutService;
+import alphahu.tdm.game.MagazineRefill;
 import alphahu.tdm.game.MatchManager;
 import alphahu.tdm.game.SkinService;
 import alphahu.tdm.game.TeamUniformService;
@@ -63,6 +64,8 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
     private ReportService reports;
     private SkinService skins;
     private TeamUniformService uniform;
+    /** 复活补弹（走 TacZ 桥接；没装桥接时自降级为空操作）。 */
+    private MagazineRefill magazineRefill;
     /** 武器显示名（本地优先，WBDAddon 兜底）。 */
     private WeaponNames weaponNames;
 
@@ -208,6 +211,9 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
 
         // 4.6 队伍队服：纯原版染色皮革，带负护甲修饰所以不提供护甲收益
         this.uniform = new TeamUniformService(this);
+
+        // 4.7 复活补弹：TacZ 把当前弹匣存在物品 NBT 里，死亡不清背包就会带回来
+        this.magazineRefill = new MagazineRefill(this);
 
         // 5. 监听战斗事件与商店交互
         Bukkit.getPluginManager().registerEvents(new CombatListener(this, matchManager), this);
@@ -486,6 +492,11 @@ public final class WBDTeamDeathmatch extends JavaPlugin {
     /** 队伍队服服务。 */
     public TeamUniformService getUniform() {
         return uniform;
+    }
+
+    /** 复活补弹服务。 */
+    public MagazineRefill getMagazineRefill() {
+        return magazineRefill;
     }
 
     /**
