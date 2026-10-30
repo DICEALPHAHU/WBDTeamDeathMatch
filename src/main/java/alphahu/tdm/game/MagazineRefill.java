@@ -37,7 +37,8 @@ public final class MagazineRefill {
     /** 每个 gunId 的弹匣容量；同一把枪反复问没有意义。 */
     private final Map<String, Integer> capacities = new HashMap<>();
 
-    private boolean probed;
+    /** 「没装桥接」只提示一次，避免每次复活刷屏。 */
+    private boolean warnedMissing;
     private Object api;
     private Method getItemGunId;
     private Method getGun;
@@ -49,6 +50,9 @@ public final class MagazineRefill {
 
     public MagazineRefill(WBDTeamDeathmatch plugin) {
         this.plugin = plugin;
+        // 启动就探一次：TacZ 桥接在 onEnable 更早的时机注册服务，
+        // 此时能拿到就把结论打进日志，省得「到底接没接上」只能靠猜。
+        probe();
     }
 
     /**
@@ -138,10 +142,9 @@ public final class MagazineRefill {
      * 就只放弃对应的那一步，不影响其余。
      */
     private void probe() {
-        if (probed) {
+        if (api != null) {
             return;
         }
-        probed = true;
         try {
             Class<?> apiClass = Class.forName("com.tacz.bridge.spigot.api.TacZSpigotApi");
             Object service = plugin.getServer().getServicesManager().load(apiClass);
@@ -162,11 +165,20 @@ public final class MagazineRefill {
             setItemHeat = optionalMethod(apiClass, "setItemHeat", ItemStack.class, float.class);
             plugin.getLogger().info("复活补弹已接入 TacZ 桥接。");
         } catch (ClassNotFoundException e) {
-            plugin.getLogger().info("未检测到 TacZ 桥接，复活补弹不会生效。");
+            missingLogOnce();
         } catch (Throwable t) {
             api = null;
-            plugin.getLogger().warning("探测 TacZ 桥接失败，复活补弹不会生效：" + t);
+            missingLogOnce();
+            plugin.getLogger().warning("探测 TacZ 桥接失败：" + t);
         }
+    }
+
+    private void missingLogOnce() {
+        if (warnedMissing) {
+            return;
+        }
+        warnedMissing = true;
+        plugin.getLogger().info("未检测到 TacZ 桥接，复活补弹不会生效。");
     }
 
     private static Method optionalMethod(Class<?> type, String name, Class<?>... params) {
