@@ -13,7 +13,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -36,11 +35,17 @@ import java.util.Locale;
  * 手写 YAML 是不可能的，只能让管理员直接把实物摆进去，插件再把它序列化。
  * 这也正是 WBD 的做法。
  *
- * <h2>为什么要把快捷操作全拦掉</h2>
- * 编辑器里每一次点击都直接对应「这一格有什么商品」。Shift 点击会一次搬一整摞、
- * 数字键会把快捷栏的东西换进来、拖拽铺货会一次改一片 —— 这些操作在普通箱子里
- * 很顺手，在这里却会让管理员在毫无察觉的情况下改掉一整排商品。
- * 所以只保留最朴素的「点一下拿起、点一下放下」。
+ * <h2>哪些操作被拦、为什么只拦这些</h2>
+ *
+ * <p>编辑器里每一格都直接对应「这里卖什么」，所以**一次动一整摞**的操作要拦：
+ * Shift 点击（整摞搬进/搬出：搬进来就是「一次买 64 把枪」的商品，搬出去就是商品
+ * 无声消失）、数字键（快捷栏换货）、双击（把同类全部聚到光标）、副手交换、
+ * Ctrl+丢弃、一键整理。
+ *
+ * <p>除此之外**全部放行**，包括拿起、放下、箱内挪格、从背包拖进来、丢弃。
+ * 曾经这些也被拦掉，那时候「放错了想挪一格」和「不想要了想删掉」都得去手改
+ * YAML —— 一个自称可视化的编辑器，却连把商品拿起来都做不到，这明显是拦过头了。
+ * 判断标准只有一条：<b>这个动作是不是一次改掉一整摞</b>；不是就让它正常工作。
  *
  * @author AlphaHu
  */
@@ -141,7 +146,7 @@ public final class ShopEditor implements Listener {
         player.sendMessage(Text.color("&6========= 商店编辑器 ========="));
         player.sendMessage(Text.color("&7正在编辑：&f" + label + " &7第 &f" + current + "/" + pageCount + " &7页"));
         player.sendMessage(Text.color("&7把要卖的东西摆进箱子，&f关掉箱子即保存&7。"));
-        player.sendMessage(Text.color("&7Shift、数字键、拖拽已被拦截，请用普通点击摆放。"));
+        player.sendMessage(Text.color("&7点、拖、丢都可以用；只拦 Shift／数字键／双击这类「一次搬一摞」的操作。"));
         player.sendMessage(Text.color("&7商品落点由材质分组自动分配，想固定请配 shop.material-slots。"));
         player.sendMessage(Text.color("&6=============================="));
     }
@@ -156,7 +161,16 @@ public final class ShopEditor implements Listener {
             return;
         }
 
-        // 快捷操作一律拦掉：它们一次改动多格，而这里每一格都对应一件商品
+        // 只拦「一次动一整摞」的快捷操作，理由见类注释。
+        //
+        // 具体每种拦掉会坏在哪：
+        //   isShiftClick               整摞搬进箱子 = 一个「64 件」的商品；
+        //                              整摞搬出箱子 = 商品无声消失
+        //   NUMBER_KEY                 快捷栏那件东西直接换进商品格
+        //   DOUBLE_CLICK               把箱内同类全聚到光标上，一次清掉一整片
+        //   SWAP_OFFHAND / CONTROL_DROP 同上，只是换了个键位
+        //   COLLECT_TO_CURSOR          双击的同义动作（部分端单独报这个 action）
+        //   MOVE_TO_OTHER_INVENTORY    Shift 点击的底层 action
         ClickType click = event.getClick();
         if (event.isShiftClick()
                 || click == ClickType.NUMBER_KEY
@@ -169,25 +183,24 @@ public final class ShopEditor implements Listener {
             return;
         }
 
-        boolean inEditor = event.getRawSlot() < event.getView().getTopInventory().getSize();
-        if (inEditor) {
-            ItemStack cursor = event.getCursor();
-            // 箱内、且手上没东西 —— 这是「把商品拿走」的动作，拦掉。
-            // 手上拿着东西去点，是「放进去」，放行。
-            if (cursor == null || cursor.getType().isAir()) {
-                event.setCancelled(true);
-            }
-        }
-        // 点在玩家背包上：允许，管理员得先从背包把东西拿出来
+        // 其余一律不拦：普通点击、拿起放下、箱内挪格、背包与箱子之间的拖拽、
+        // 丢弃（拿起来按 Q 就是「删掉这件商品」）。关闭界面时才保存，
+        // 所以这些操作本身就是编辑器该有的编辑动作。
     }
 
-    /** 编辑器内禁止拖拽铺货。 */
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onDrag(InventoryDragEvent event) {
-        if (event.getView().getTopInventory().getHolder() instanceof EditorHolder) {
-            event.setCancelled(true);
-        }
-    }
+    // ------------------------------------------------------------------
+    // 关于拖拽：这里**故意没有** InventoryDragEvent 处理器
+    //
+    // 曾经有一个，内容是「编辑器里一律 event.setCancelled(true)」。它的后果是
+    // 玩家连「在自己背包里挪一下位置」都做不到，更别说把武器拖进箱子 ——
+    // 玩家反馈的「武器都拖不动」就是它。
+    //
+    // 拖拽恰恰是最贴合摆货的手势：一次往一格放一件，或者沿着箱子拉一排；
+    // 而它**永远不会一次搬运一整摞**（左键/右键拖拽都是每格一件），
+    // 所以不属于「一次改掉一整摞」那类需要拦的操作。
+    //
+    // 要拦的话请先想清楚拦的是不是「一次动一整摞」，别再整段取消。
+    // ------------------------------------------------------------------
 
     // ------------------------------------------------------------------
     // 保存
