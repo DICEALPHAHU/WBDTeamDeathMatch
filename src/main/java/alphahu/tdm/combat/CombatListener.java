@@ -74,6 +74,7 @@ public final class CombatListener implements Listener {
 
         Player attacker = resolveAttacker(event.getDamager());
         TdmPlayer victimRecord = match.getPlayer(victim);
+        TdmPlayer attackerRecord = attacker == null ? null : match.getPlayer(attacker);
         long now = System.currentTimeMillis();
 
         // 1. 开赛前与结算期间不允许玩家互殴。
@@ -102,7 +103,6 @@ public final class CombatListener implements Listener {
         //    先处理攻击者的保护：保护期内主动开火就该立刻失去保护，
         //    否则会出现「顶着无敌冲上去打人」的白嫖打法。
         if (attacker != null && attacker != victim && !match.isSameTeam(victim, attacker)) {
-            TdmPlayer attackerRecord = match.getPlayer(attacker);
             if (attackerRecord != null && attackerRecord.isProtected(now)
                     && plugin.getSettings().breakProtectionOnAttack) {
                 attackerRecord.clearProtection();
@@ -111,6 +111,21 @@ public final class CombatListener implements Listener {
             }
         }
         if (victimRecord != null && victimRecord.isProtected(now)) {
+            event.setCancelled(true);
+            return;
+        }
+
+        // 4. 阵亡者不参与战斗。
+        //    正常路径下这两条永远不成立 —— 阵亡的人此刻是旁观者，打不到人也被打不到。
+        //    它们防的是「游戏模式被人改回生存/冒险」那种泄漏（见 TdmMatch 的旁观看门狗）：
+        //    那时玩家看着是活的，枪能开、人能被射，等于免费的活体雷达 + 幽灵火力。
+        //    看门狗一 tick 内就会把模式纠回去，但这一 tick 里已经飞出去的子弹
+        //    必须在这里拦掉，否则账上会凭空多出一条击杀。
+        if (victimRecord != null && !victimRecord.isAlive()) {
+            event.setCancelled(true);
+            return;
+        }
+        if (attackerRecord != null && !attackerRecord.isAlive()) {
             event.setCancelled(true);
         }
     }
@@ -140,7 +155,16 @@ public final class CombatListener implements Listener {
             return;
         }
         TdmPlayer record = match.getPlayer(victim);
-        if (record != null && record.isProtected(System.currentTimeMillis())) {
+        if (record == null) {
+            return;
+        }
+        // 阵亡者不吃任何环境伤害：他本该是旁观者，只是因为模式被人改掉才还留在
+        // 世界里。这时候让他摔死、烧死，只会在死亡界面上再叠一层，复活流程跟着乱
+        if (!record.isAlive()) {
+            event.setCancelled(true);
+            return;
+        }
+        if (record.isProtected(System.currentTimeMillis())) {
             event.setCancelled(true);
         }
     }

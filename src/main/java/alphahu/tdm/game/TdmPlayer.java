@@ -65,6 +65,14 @@ public final class TdmPlayer {
     private boolean spectatorPending;
 
     /**
+     * 「阵亡期间游戏模式被别人改掉」这条告警是否已经打过。
+     *
+     * <p>只用来限流日志，不参与任何逻辑判断：模式看门狗本身每次都照样纠，
+     * 但一遍警告刷满控制台就没人看得见了。每次阵亡重置一次。
+     */
+    private boolean spectateLeakLogged;
+
+    /**
      * 是否在比赛已经开打之后才加入。
      *
      * <p>段位结算要用它：中途加入者只结算击杀分，不给名次分和队内排名分，
@@ -226,6 +234,14 @@ public final class TdmPlayer {
         this.spectatorPending = spectatorPending;
     }
 
+    public boolean isSpectateLeakLogged() {
+        return spectateLeakLogged;
+    }
+
+    public void setSpectateLeakLogged(boolean spectateLeakLogged) {
+        this.spectateLeakLogged = spectateLeakLogged;
+    }
+
     public boolean joinedLate() {
         return joinedLate;
     }
@@ -249,5 +265,6 @@ public final class TdmPlayer {
         // 会让新一场的完整参与者被当成半场玩家，白少一大截名次分
         joinedLate = false;
         spectatorPending = false;
+        spectateLeakLogged = false;
     }
 }

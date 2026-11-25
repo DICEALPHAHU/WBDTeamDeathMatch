@@ -481,6 +481,20 @@ public final class TdmMatch {
             processRespawns(now);
         }
 
+        // 旁观态看门狗。必须排在 processRespawns **之后**：
+        // 刚被放回战场的人是 alive，这里会自然跳过；排在前面的话，
+        // 它会把已经切回 SURVIVAL 的复活者又按回旁观，人就永远复活不了。
+        //
+        // 为什么需要它 —— 阵亡路径上有两处不归我们管的时序：
+        //   1) 有插件会为了「观战者互相可见」把观战者的游戏模式抬到
+        //      ADVENTURE / SURVIVAL，抬完没人负责抬回去（WBDAddon v1.32.5
+        //      就是这个行为，v1.32.6 已回退，但服务器未必立刻更新）；
+        //   2) Arclight 这类混合端的 spigot().respawn() 可能晚于「切旁观」完成，
+        //      而重生点被 onRespawn 钉成了阵亡位置。
+        // 两种情况的表现一模一样：观战时间变成「幽灵战士」—— 人站在自己倒下的
+        // 地方、看着是活的、枪还能开人还能被打，账上却算阵亡。
+        enforceSpectatorState();
+
         // 每个玩家的 HUD 每 2 tick 刷一次：人眼分辨不出 1 tick 与 2 tick 的差别，
         // 但包量与字符串拼接的开销差一倍。
         //
@@ -819,6 +833,8 @@ public final class TdmMatch {
         // 但真正动手前还要等「切旁观」走完，见 TdmPlayer#spectatorPending
         victimRecord.setRespawnAt(now + settings.respawnDelaySeconds * 1000L);
         victimRecord.setSpectatorPending(true);
+        // 每次阵亡都重新允许打一遍泄漏告警：这是「这一次死亡」的诊断，不是全场一次
+        victimRecord.setSpectateLeakLogged(false);
 
         if (state == MatchState.LIVE) {
             checkKillTarget();
@@ -951,6 +967,66 @@ public final class TdmMatch {
             }
         } finally {
             record.setSpectatorPending(false);
+        }
+    }
+
+    /**
+     * 把「阵亡但仍不是旁观者」的玩家按回旁观状态。
+     *
+     * <p>正常路径下这里一次也不该触发：阵亡流程走完，人就是 SPECTATOR，
+     * 直到 {@link #processRespawns(long)} 把他放回战场。触发只有两种情况，
+     * 而且都是别人（或别的时序）干的：
+     * <ul>
+     *   <li>有插件把观战者的游戏模式抬高，以便同阵营观战者互相看得见；</li>
+     *   <li>服务端把 {@code respawn()} 排在「切旁观」之后才真正执行，
+     *       而重生点又被钉在阵亡位置。</li>
+     * </ul>
+     *
+     * <p>两者的后果比看起来严重得多：玩家看着是活的，能走能开枪也能被打，
+     * 但账上算阵亡 —— 他不占复活排期（不会自己好），却又能给敌人送击杀。
+     * 所以这里不指望「别人会改回去」，直接每秒对一次账。
+     *
+     * <p>判断用的是「是否阵亡」而不是「在哪个模式」，因为模式才是被污染的那个值：
+     * 拿污染值当判据，看门狗自己也会被骗过去。
+     */
+    private void enforceSpectatorState() {
+        for (TdmPlayer record : players.values()) {
+            if (record.isAlive()) {
+                continue;
+            }
+            Player player = Bukkit.getPlayer(record.uuid());
+            if (player == null) {
+                continue;
+            }
+            GameMode current = player.getGameMode();
+            if (current == GameMode.SPECTATOR) {
+                continue;
+            }
+            // 死亡界面还没关掉：这一刻改模式会被随后的 respawn 覆盖，
+            // 白改一次还会多打一条误导性的日志。等它关掉再来
+            if (player.isDead()) {
+                continue;
+            }
+
+            player.setGameMode(GameMode.SPECTATOR);
+            // 模式被改过往往伴随位置被动过（重生点就是阵亡位置），一并纠回来
+            Location point = record.deathLocation() != null
+                    ? record.deathLocation()
+                    : arena.getLobby();
+            if (point != null) {
+                player.teleport(point);
+            }
+            plugin.getHud().hideRespawnBar(player);
+
+            // 每个「死亡周期」只报一次：这里可能每 tick 都在纠，
+            // 日志刷起来就没人看得见了。真凶要靠这条线索定位，不能省
+            if (!record.isSpectateLeakLogged()) {
+                record.setSpectateLeakLogged(true);
+                plugin.getLogger().warning("阵亡玩家 " + player.getName() + " 的游戏模式是 "
+                        + current + "，已纠正为旁观并向阵亡位置归位。"
+                        + "这不是本插件的正常状态：请检查是否有其它插件在改动观战者的游戏模式"
+                        + "（WBDAddon 1.32.5 的 name-tag 观战者互见功能已知会造成这个问题）。");
+            }
         }
     }
 
